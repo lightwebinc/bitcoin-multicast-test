@@ -1,0 +1,12 @@
+[Unit]
+Description=Join IPv6 multicast groups on enp6s0 (recv3)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/usr/bin/python3 /usr/local/bin/mcast-join.py
+
+[Install]
+WantedBy=multi-user.target
