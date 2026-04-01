@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start a tmux session with one window per receiver running tcpdump on enp6s0.
-# Run this on the lax host: bash ~/bitcoin-multicast-test-lax/tmux-recv.sh
+# Run this on the LXD host: bash tmux-recv.sh
 
 SESSION="mcast-recv"
 

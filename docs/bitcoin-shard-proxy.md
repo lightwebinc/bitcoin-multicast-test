@@ -1,0 +1,81 @@
+# bitcoin-shard-proxy integration
+
+The `proxy` VM runs [bitcoin-shard-proxy](https://github.com/lightwebinc/bitcoin-shard-proxy), deployed via the [bitcoin-ingress](https://github.com/lightwebinc/bitcoin-ingress) Ansible playbook.
+
+## Deployed state
+
+| Item        | Value                                              |
+|-------------|----------------------------------------------------|
+| Binary      | `/usr/local/bin/bitcoin-shard-proxy`               |
+| Config      | `/etc/bitcoin-shard-proxy/config.env`              |
+| Service     | `bitcoin-shard-proxy.service` (systemd, enabled)   |
+| Listen      | `[::]:9000` UDP — BRC-12 frames in                 |
+| Egress      | `enp6s0` → `ff05::/16` (site-local multicast)      |
+| Shard bits  | `8` (256 groups: `ff05::0`–`ff05::ff`)             |
+| Metrics     | `http://10.10.10.20:9100/metrics`                  |
+| Health      | `http://10.10.10.20:9100/healthz`                  |
+| Readiness   | `http://10.10.10.20:9100/readyz`                   |
+
+## Ansible inventory
+
+Place this at `bitcoin-ingress/ansible/inventory/hosts.yml`. See [bitcoin-ingress docs/ansible.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/ansible.md) and [docs/lxd-lab.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/lxd-lab.md) for full deployment instructions.
+
+```yaml
+all:
+  children:
+    ingress_nodes:
+      vars:
+        ansible_user: ubuntu
+        ansible_connection: ssh
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+        egress_mode: ethernet
+        shard_bits: 8
+        mc_scope: site
+        enable_bgp: false
+      hosts:
+        proxy:
+          ansible_host: 10.10.10.20
+          egress_iface: enp6s0   # must be host-level var, not group vars
+```
+
+> **Note:** `egress_iface` must be set at the host level. Setting it under `vars:` is silently overridden by `group_vars/all.yml` in bitcoin-ingress. See [bitcoin-ingress docs/ansible.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/ansible.md) for details.
+
+## Deploy / upgrade
+
+```bash
+cd /path/to/bitcoin-ingress/ansible
+ansible-playbook -i inventory/hosts.yml site.yml
+
+# Upgrade to a specific version
+ansible-playbook -i inventory/hosts.yml site.yml --tags proxy -e proxy_version=v1.2.0
+```
+
+After deployment, restart `mcast-join.service` on receivers to repopulate the bridge MDB — see [docs/network.md](network.md#bridge-mdb-volatility).
+
+## Verification
+
+```bash
+# Service and health
+lxc exec proxy -- systemctl status bitcoin-shard-proxy
+lxc exec proxy -- curl -s http://localhost:9100/healthz
+lxc exec proxy -- curl -s http://localhost:9100/readyz
+
+# Send BRC-12 test frames from source VM via IPv6
+lxc exec source -- send-test-frames -addr '[fd20::2]:9000' -shard-bits 2 -spread
+
+# Or from proxy loopback
+lxc exec proxy -- send-test-frames -addr '[::1]:9000' -shard-bits 2 -spread
+
+# Confirm forwarded packet counter incremented
+lxc exec proxy -- curl -s http://localhost:9100/metrics | grep bsp_packets_forwarded_total
+
+# Capture multicast delivery on a receiver
+lxc exec recv1 -- tcpdump -i enp6s0 -n 'ip6 and udp' -c 8
+```
+
+## Known deployment notes
+
+- Ubuntu 24.04 LXD VMs use predictable NIC names (`enp5s0`, `enp6s0`), not `eth0`/`eth1`.
+- The `acl` package must be present on the target VM for Ansible `become` with system users to work.
+- The systemd `ExecStartPre` command requires `/bin/sh -c '...'` wrapping — systemd does not perform shell expansion in `ExecStartPre` directly.
+- Bridge MDB is volatile. Restart `mcast-join.service` on all receivers after any proxy reboot or re-deploy to restore multicast delivery.

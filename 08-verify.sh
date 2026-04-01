@@ -5,7 +5,7 @@ exec </dev/null
 echo "==> [08] Verification checks..."
 
 echo ""
-echo "--- Bridge multicast DB (lax host) ---"
+echo "--- Bridge multicast DB ---"
 bridge mdb show dev lxdbr1
 
 echo ""
