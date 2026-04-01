@@ -9,8 +9,12 @@ echo "--- Bridge multicast DB ---"
 bridge mdb show dev lxdbr1
 
 echo ""
-echo "--- Bridge link / MLD snooping state ---"
-cat /sys/devices/virtual/net/lxdbr1/bridge/multicast_snooping && echo "  (multicast_snooping=1 means ON)"
+echo "--- Bridge MLD snooping + querier state ---"
+printf 'multicast_snooping = '; cat /sys/devices/virtual/net/lxdbr1/bridge/multicast_snooping
+printf 'multicast_querier  = '; cat /sys/devices/virtual/net/lxdbr1/bridge/multicast_querier
+echo "  (both must be 1 — querier is required for snooping to suppress flooding)"
+systemctl is-active lxd-bridge-mcast-querier.service && echo "  lxd-bridge-mcast-querier.service: active" \
+  || echo "  WARNING: lxd-bridge-mcast-querier.service is not active — querier will not survive reboot"
 
 echo ""
 echo "--- MLD group membership per receiver ---"

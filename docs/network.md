@@ -11,7 +11,10 @@ Multicast snooping is enabled on `lxdbr1` via sysfs:
 
 ```
 /sys/devices/virtual/net/lxdbr1/bridge/multicast_snooping = 1
+/sys/devices/virtual/net/lxdbr1/bridge/multicast_querier   = 1
 ```
+
+**Both settings are required.** Snooping alone is insufficient — without a querier the bridge never sends MLD queries, so receiver ports appear silent and the bridge floods all multicast to all ports. The querier is persisted by `lxd-bridge-mcast-querier.service` (installed on the LXD host by the deployment scripts).
 
 ## VM assignments
 
@@ -67,6 +70,13 @@ The bridge multicast database (MDB) is populated by MLD membership reports and i
 ```bash
 for vm in recv1 recv2 recv3; do lxc exec "$vm" -- systemctl restart mcast-join.service; done
 bridge mdb show dev lxdbr1
+```
+
+The `multicast_querier` sysfs setting is also cleared on reboot. `lxd-bridge-mcast-querier.service` restores it automatically when `lxdbr1` comes up. Verify with:
+
+```bash
+cat /sys/devices/virtual/net/lxdbr1/bridge/multicast_querier  # expect: 1
+systemctl is-active lxd-bridge-mcast-querier.service           # expect: active
 ```
 
 ## Netplan configs
