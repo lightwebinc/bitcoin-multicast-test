@@ -17,13 +17,15 @@ systemctl is-active lxd-bridge-mcast-querier.service && echo "  lxd-bridge-mcast
   || echo "  WARNING: lxd-bridge-mcast-querier.service is not active — querier will not survive reboot"
 
 echo ""
-echo "--- MLD group membership per receiver ---"
-for vm in recv1 recv2 recv3; do
+echo "--- MLD group membership per listener ---"
+for vm in listener1 listener2 listener3; do
   echo ""
   echo "  [$vm] ip maddr show dev enp6s0:"
   lxc exec "$vm" -- ip maddr show dev enp6s0
   echo "  [$vm] ip -6 addr show enp6s0:"
   lxc exec "$vm" -- ip -6 addr show enp6s0
+  echo "  [$vm] bitcoin-shard-listener service state:"
+  lxc exec "$vm" -- systemctl is-active bitcoin-shard-listener.service || true
 done
 
 echo ""

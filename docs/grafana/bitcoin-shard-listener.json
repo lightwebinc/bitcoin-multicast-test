@@ -1,0 +1,181 @@
+{
+  "title": "bitcoin-shard-listener",
+  "uid": "bitcoin-shard-listener",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "tags": ["bitcoin", "listener", "lax-lab"],
+  "timezone": "",
+  "refresh": "10s",
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "query": "label_values(bsl_frames_received_total, instance)", "refId": "a" },
+        "includeAll": true,
+        "multi": true,
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Ingress",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Frames received (rate by instance, version)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 1, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (instance, version) (rate(bsl_frames_received_total{instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}} v{{version}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Frames received (rate by worker)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 1, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (instance, worker) (rate(bsl_frames_received_total{instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}} w{{worker}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Filtering",
+      "gridPos": { "x": 0, "y": 9, "w": 24, "h": 1 }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Frames dropped (rate by reason)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (instance, reason) (rate(bsl_frames_dropped_total{instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}} {{reason}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Dropped total (last 15m, by reason)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (reason) (increase(bsl_frames_dropped_total{instance=~\"$instance\"}[15m]))",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Egress",
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 1 }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Frames forwarded (rate by proto)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (instance, proto) (rate(bsl_frames_forwarded_total{instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}} {{proto}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Egress errors (rate)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (instance) (rate(bsl_egress_errors_total{instance=~\"$instance\"}[1m]))",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "NACK / gap recovery",
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 }
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Gaps detected vs suppressed",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum by (instance) (rate(bsl_gaps_detected_total{instance=~\"$instance\"}[1m]))", "legendFormat": "{{instance}} detected" },
+        { "expr": "sum by (instance) (rate(bsl_gaps_suppressed_total{instance=~\"$instance\"}[1m]))", "legendFormat": "{{instance}} suppressed" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 32,
+      "type": "timeseries",
+      "title": "NACK dispatched / unrecovered",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum by (instance) (rate(bsl_nacks_dispatched_total{instance=~\"$instance\"}[1m]))",  "legendFormat": "{{instance}} dispatched" },
+        { "expr": "sum by (instance) (rate(bsl_nacks_unrecovered_total{instance=~\"$instance\"}[1m]))", "legendFormat": "{{instance}} unrecovered" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "pps" } }
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "Readiness",
+      "gridPos": { "x": 0, "y": 36, "w": 24, "h": 1 }
+    },
+    {
+      "id": 41,
+      "type": "stat",
+      "title": "Target up",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 37, "w": 24, "h": 4 },
+      "targets": [
+        { "expr": "up{job=\"bitcoin-shard-listener\", instance=~\"$instance\"}", "legendFormat": "{{instance}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" } } },
+            { "type": "value", "options": { "1": { "text": "UP",   "color": "green" } } }
+          ]
+        }
+      }
+    }
+  ]
+}

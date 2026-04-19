@@ -18,7 +18,12 @@ The `proxy` VM runs [bitcoin-shard-proxy](https://github.com/lightwebinc/bitcoin
 
 ## Ansible inventory
 
-Place this at `bitcoin-ingress/ansible/inventory/hosts.yml`. See [bitcoin-ingress docs/ansible.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/ansible.md) and [docs/lxd-lab.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/lxd-lab.md) for full deployment instructions.
+Inventory lives in this repo at
+[`ansible/ingress-hosts.yml`](../ansible/ingress-hosts.yml) and is
+invoked by `ansible/run-deploy.sh`. See
+[bitcoin-ingress docs/ansible.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/ansible.md)
+and [docs/lxd-lab.md](https://github.com/lightwebinc/bitcoin-ingress/blob/main/docs/lxd-lab.md)
+for full playbook documentation.
 
 ```yaml
 all:
@@ -50,7 +55,9 @@ ansible-playbook -i inventory/hosts.yml site.yml
 ansible-playbook -i inventory/hosts.yml site.yml --tags proxy -e proxy_version=v1.2.0
 ```
 
-After deployment, restart `mcast-join.service` on receivers to repopulate the bridge MDB — see [docs/network.md](network.md#bridge-mdb-volatility).
+After deployment, listeners re-emit MLD membership automatically when the
+`bitcoin-shard-listener.service` restarts — see
+[docs/network.md](network.md#bridge-mdb-volatility).
 
 ## Verification
 
@@ -60,17 +67,18 @@ lxc exec proxy -- systemctl status bitcoin-shard-proxy
 lxc exec proxy -- curl -s http://localhost:9100/healthz
 lxc exec proxy -- curl -s http://localhost:9100/readyz
 
-# Send BRC-12 test frames from source VM via IPv6
-lxc exec source -- send-test-frames -addr '[fd20::2]:9000' -shard-bits 2 -spread
-
-# Or from proxy loopback
-lxc exec proxy -- send-test-frames -addr '[::1]:9000' -shard-bits 2 -spread
+# Send BSV frames from the source VM using bitcoin-subtx-generator.
+# 1000 pps for 10 s with 8 random subtree IDs (seed pinned in ansible/listener-hosts.yml).
+lxc exec source -- subtx-gen \
+  -addr '[fd20::2]:9000' \
+  -shard-bits 2 -subtrees 8 -subtree-seed 'lax-lab-2026' \
+  -pps 1000 -duration 10s
 
 # Confirm forwarded packet counter incremented
 lxc exec proxy -- curl -s http://localhost:9100/metrics | grep bsp_packets_forwarded_total
 
-# Capture multicast delivery on a receiver
-lxc exec recv1 -- tcpdump -i enp6s0 -n 'ip6 and udp' -c 8
+# Capture multicast delivery on a listener
+lxc exec listener1 -- tcpdump -i enp6s0 -n 'ip6 and udp' -c 8
 ```
 
 ## Known deployment notes
@@ -78,4 +86,6 @@ lxc exec recv1 -- tcpdump -i enp6s0 -n 'ip6 and udp' -c 8
 - Ubuntu 24.04 LXD VMs use predictable NIC names (`enp5s0`, `enp6s0`), not `eth0`/`eth1`.
 - The `acl` package must be present on the target VM for Ansible `become` with system users to work.
 - The systemd `ExecStartPre` command requires `/bin/sh -c '...'` wrapping — systemd does not perform shell expansion in `ExecStartPre` directly.
-- Bridge MDB is volatile. Restart `mcast-join.service` on all receivers after any proxy reboot or re-deploy to restore multicast delivery.
+- Bridge MDB is volatile. Restart `bitcoin-shard-listener.service` on
+  all listeners after any proxy reboot or re-deploy to restore
+  multicast delivery.

@@ -1,0 +1,44 @@
+# Canonical Prometheus scrape config for the lax multicast-test lab.
+# Pushed onto the `metrics` VM (10.10.10.142) by lab/09-metrics-update.sh.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: lax-lab
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: bitcoin-shard-proxy
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['10.10.10.20:9100']
+        labels:
+          instance_role: proxy
+
+  - job_name: bitcoin-shard-listener
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - '10.10.10.31:9200'
+          - '10.10.10.32:9200'
+          - '10.10.10.33:9200'
+        labels:
+          instance_role: listener
+    relabel_configs:
+      # Friendly `instance` label: listener1 / listener2 / listener3.
+      - source_labels: [__address__]
+        regex: '10\.10\.10\.31:9200'
+        target_label: instance
+        replacement: 'listener1'
+      - source_labels: [__address__]
+        regex: '10\.10\.10\.32:9200'
+        target_label: instance
+        replacement: 'listener2'
+      - source_labels: [__address__]
+        regex: '10\.10\.10\.33:9200'
+        target_label: instance
+        replacement: 'listener3'

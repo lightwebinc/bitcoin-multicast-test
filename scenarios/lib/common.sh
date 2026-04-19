@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# Shared helpers for scenarios.
+# Source this from a scenario's run.sh:
+#
+#   SCENARIO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#   source "$SCENARIO_DIR/../lib/common.sh"
+
+set -euo pipefail
+
+# Defaults — override via env.
+: "${PROXY_VM:=proxy}"
+: "${PROXY_ADDR:=[fd20::2]:9000}"
+: "${SOURCE_VM:=source}"
+: "${LISTENER_PORT:=9001}"
+: "${METRICS_PORT:=9200}"
+: "${SHARD_BITS:=2}"
+: "${SUBTREES:=8}"
+: "${SUBTREE_SEED:=lax-lab-2026}"
+: "${PPS:=1000}"
+: "${DURATION:=10s}"
+: "${PAYLOAD_SIZE:=256}"
+
+LISTENERS=(listener1 listener2 listener3)
+LISTENER_IPS=(10.10.10.31 10.10.10.32 10.10.10.33)
+
+# --- Metric helpers -------------------------------------------------------
+
+# metric_value <ip:port> <metric_name> [label_filter_substring]
+# Prints the sum of all matching samples (0 if none found). Label filter
+# is a simple grep on the raw metric line, e.g. 'reason="shard_filter"'.
+metric_value() {
+  local endpoint="$1" name="$2" filter="${3:-}"
+  local raw
+  raw=$(curl -s --max-time 3 "http://$endpoint/metrics" || true)
+  if [[ -z "$raw" ]]; then
+    echo 0
+    return
+  fi
+  if [[ -n "$filter" ]]; then
+    awk -v n="$name" -v f="$filter" '
+      $0 !~ /^#/ && index($0, n) == 1 && index($0, f) { v += $NF }
+      END { printf "%.0f\n", v }
+    ' <<<"$raw"
+  else
+    awk -v n="$name" '
+      $0 !~ /^#/ && index($0, n) == 1 { v += $NF }
+      END { printf "%.0f\n", v }
+    ' <<<"$raw"
+  fi
+}
+
+# Take a snapshot of all counter metrics we care about into
+# a tab-separated file: <host>\t<metric>\t<value>.
+snapshot_metrics() {
+  local outfile="$1"
+  : > "$outfile"
+  for i in "${!LISTENERS[@]}"; do
+    local host="${LISTENERS[$i]}"
+    local ip="${LISTENER_IPS[$i]}"
+    for m in bsl_frames_received_total bsl_frames_forwarded_total bsl_egress_errors_total \
+             'bsl_frames_dropped_total|shard_filter' \
+             'bsl_frames_dropped_total|subtree_exclude' \
+             'bsl_frames_dropped_total|subtree_include_miss' \
+             'bsl_frames_dropped_total|bad_frame' \
+             bsl_gaps_detected_total bsl_gaps_suppressed_total \
+             bsl_nacks_dispatched_total bsl_nacks_unrecovered_total; do
+      local name="${m%%|*}"
+      local filter=""
+      if [[ "$m" == *'|'* ]]; then
+        filter="reason=\"${m##*|}\""
+      fi
+      local v
+      v=$(metric_value "$ip:$METRICS_PORT" "$name" "$filter")
+      printf '%s\t%s\t%s\n' "$host" "$m" "$v" >> "$outfile"
+    done
+  done
+}
+
+# diff_metric <before.tsv> <after.tsv> <host> <metric-with-optional-filter>
+diff_metric() {
+  local before="$1" after="$2" host="$3" metric="$4"
+  local b a
+  b=$(awk -v h="$host" -v m="$metric" -F'\t' '$1==h && $2==m {print $3}' "$before")
+  a=$(awk -v h="$host" -v m="$metric" -F'\t' '$1==h && $2==m {print $3}' "$after")
+  echo $(( ${a:-0} - ${b:-0} ))
+}
+
+# assert_near <label> <got> <expected> <tolerance_fraction>
+# Fails the scenario if |got-expected|/max(expected,1) > tolerance.
+assert_near() {
+  local label="$1" got="$2" expected="$3" tol="$4"
+  if [[ "$expected" -le 0 ]]; then
+    if [[ "$got" -eq 0 ]]; then
+      echo "PASS  $label: got 0 (expected 0)"
+      return 0
+    fi
+    echo "FAIL  $label: got $got (expected 0)"
+    SCENARIO_FAIL=1
+    return 1
+  fi
+  local diff=$(( got - expected ))
+  diff=${diff#-}
+  local limit
+  limit=$(awk -v e="$expected" -v t="$tol" 'BEGIN{printf "%.0f", e*t}')
+  if (( diff <= limit )); then
+    echo "PASS  $label: got $got expected~$expected (tol=$tol, diff=$diff <= $limit)"
+  else
+    echo "FAIL  $label: got $got expected~$expected (tol=$tol, diff=$diff > $limit)"
+    SCENARIO_FAIL=1
+  fi
+}
+
+# Fire the subtx-gen inside the source VM.
+run_generator() {
+  local frames=$(( ${PPS} * $(dur_to_seconds "$DURATION") ))
+  echo "-- generator: pps=$PPS duration=$DURATION -> ~$frames frames --"
+  lxc exec "$SOURCE_VM" -- subtx-gen \
+    -addr "$PROXY_ADDR" \
+    -shard-bits "$SHARD_BITS" \
+    -subtrees "$SUBTREES" \
+    -subtree-seed "$SUBTREE_SEED" \
+    -pps "$PPS" \
+    -duration "$DURATION" \
+    -payload-size "$PAYLOAD_SIZE" \
+    -log-interval 2s
+  echo "$frames"
+}
+
+dur_to_seconds() {
+  local d="$1"
+  # Accept 10s, 1m, 500ms → seconds (rounded).
+  if [[ "$d" =~ ^([0-9]+)s$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  elif [[ "$d" =~ ^([0-9]+)m$ ]]; then
+    echo $(( ${BASH_REMATCH[1]} * 60 ))
+  elif [[ "$d" =~ ^([0-9]+)ms$ ]]; then
+    echo $(( ${BASH_REMATCH[1]} / 1000 ))
+  else
+    echo 10
+  fi
+}
+
+SCENARIO_FAIL=0

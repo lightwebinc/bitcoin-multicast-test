@@ -3,11 +3,64 @@
 This guide documents common issues and solutions discovered during testing of the bitcoin-shard-proxy multicast test lab.
 
 ## Table of Contents
+- [Listener Issues](#listener-issues)
 - [Dashboard Issues](#dashboard-issues)
 - [Multicast Delivery Problems](#multicast-delivery-problems)
 - [Connectivity Issues](#connectivity-issues)
 - [Performance Testing](#performance-testing)
 - [Service Management](#service-management)
+
+## Listener Issues
+
+### Metrics scrape returns no data from listener1..3
+
+**Symptoms:** Prometheus target shows `DOWN`, or `curl http://10.10.10.31:9200/metrics` from the LXD host times out.
+
+**Root cause:** `mgmt_cidrs_v4` in `ansible/listener-hosts.yml` is
+missing the scraper's source CIDR. The firewall role drops inbound TCP
+:9200 unless the source IP is allow-listed.
+
+**Fix:** ensure `mgmt_cidrs_v4` includes `10.10.10.0/24` (LXD mgmt
+bridge) and re-run `ansible/run-deploy.sh`.
+
+### Listener forwards 0 frames even though proxy emits multicast
+
+**Symptoms:** `bsp_packets_forwarded_total` on proxy increments, but
+`bsl_frames_received_total` on every listener stays at 0.
+
+**Likely causes:**
+1. `ingress_iface` in the inventory is `eth0` (wrong) instead of `enp6s0`.
+2. Bridge MLD querier disabled — `cat /sys/devices/virtual/net/lxdbr1/bridge/multicast_querier` returns 0.
+3. `shard_bits` on listener differs from proxy. Must match exactly.
+
+### Scenario asserts fail with counts at ~50% expected
+
+**Symptoms:** `listener2 forwarded` delta is about half the expected
+value; `shard_filter` dropped count is zero.
+
+**Root cause:** `shard_include` didn't take effect — either the
+`SHARD_INCLUDE` env var wasn't parsed or the listener joined only one
+of the two shard groups. Verify with:
+
+```bash
+lxc exec listener2 -- ip maddr show dev enp6s0 | grep ff05
+```
+
+Expect two `ff05::0` / `ff05::1` entries.
+
+### Pinned subtree IDs don't match what the generator emits
+
+**Symptoms:** listener3 (subtree-include) forwards ~0 frames instead
+of ~⅛ of the stream.
+
+**Root cause:** the `-subtree-seed` passed to `subtx-gen` differs from
+the seed used to generate the pinned IDs in the inventory. Regenerate
+and compare:
+
+```bash
+lxc exec source -- subtx-gen -subtrees 8 -subtree-seed 'lax-lab-2026' -print-subtrees
+grep subtree_ ansible/listener-hosts.yml
+```
 
 ## Dashboard Issues
 

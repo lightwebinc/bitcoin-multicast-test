@@ -1,0 +1,37 @@
+# Scenarios
+
+Each directory is a self-contained end-to-end test. Functional scenarios
+target **1000 pps for 10 s** (10 000 frames) — the LXD bridge has a known
+low PPS ceiling, so higher rates are covered only as historical perf
+baselines under [`../testing/`](../testing/).
+
+## Index
+
+| Dir                                 | Purpose                                               | Primary listener | Blocked on          |
+|-------------------------------------|-------------------------------------------------------|------------------|---------------------|
+| `00-firewall/`                      | Positive + negative firewall probes                   | all              | —                   |
+| `01-functional-all-shards/`         | All shards, all subtrees                              | listener1        | —                   |
+| `02-functional-shard-filter/`       | Half shards + subtree-exclude                         | listener2        | —                   |
+| `03-functional-subtree-filter/`     | Single subtree-include                                | listener3        | —                   |
+| `99-nack-retransmit/`               | NACK / deferred retransmit                            | all              | bitcoin-retry-endpoint |
+
+## How to add a scenario
+
+1. Create `NN-short-name/` with `README.md`, `run.sh`, `expected.md`.
+2. `run.sh` must be idempotent and self-contained: snapshot `/metrics`
+   deltas, run the generator, assert pass/fail, exit non-zero on failure.
+3. Reference the shared helpers in `scenarios/lib/` rather than duplicating
+   curl/jq code.
+
+## Rotating the pinned subtree IDs
+
+The listener inventory (`ansible/listener-hosts.yml`) pins two 32-byte
+hashes selected from the subtx-gen pool seeded with `lax-lab-2026`.
+
+```bash
+subtx-gen -subtrees 8 -subtree-seed 'lax-lab-2026' -print-subtrees
+```
+
+Listener 2 excludes index 2; listener 3 includes only index 5. To rotate,
+change the `-subtree-seed` in both `ansible/listener-hosts.yml` and in
+`scenarios/lib/common.sh` (SUBTREE_SEED).

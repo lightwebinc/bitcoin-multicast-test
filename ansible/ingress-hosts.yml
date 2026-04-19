@@ -1,0 +1,23 @@
+---
+# Inventory for the bitcoin-ingress playbook (github.com/lightwebinc/bitcoin-ingress).
+# Invoke via:  cd ~/repo/bitcoin-ingress/ansible &&
+#              ansible-playbook -i ~/repo/bitcoin-multicast-test/ansible/ingress-hosts.yml site.yml
+#
+# NOTE: egress_iface MUST be a host-level var, not group-level — group_vars/all
+# in bitcoin-ingress would otherwise override it.
+
+all:
+  children:
+    ingress_nodes:
+      vars:
+        ansible_user: ubuntu
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+        egress_mode: ethernet
+        shard_bits: 2
+        mc_scope: site
+        enable_bgp: false
+
+      hosts:
+        proxy:
+          ansible_host: 10.10.10.20
+          egress_iface: enp6s0

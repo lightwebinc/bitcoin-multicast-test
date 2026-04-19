@@ -1,4 +1,8 @@
-# Testing
+# Testing — historical perf baselines
+
+> **Note:** live end-to-end scenarios now live in [`../scenarios/`](../scenarios/).
+> This directory holds perf baselines captured before the listener reorg
+> and serves as a regression comparator for later work.
 
 Test results are organised by the proxy branch that was deployed when the tests were run.
 
