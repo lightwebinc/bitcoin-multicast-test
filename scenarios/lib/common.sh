@@ -111,10 +111,13 @@ assert_near() {
 }
 
 # Fire the subtx-gen inside the source VM.
+# Prints ONLY the expected frame-count to stdout so callers can do
+# `frames=$(run_generator)`; all log output goes to stderr.
 run_generator() {
-  local frames=$(( ${PPS} * $(dur_to_seconds "$DURATION") ))
-  echo "-- generator: pps=$PPS duration=$DURATION -> ~$frames frames --"
-  lxc exec "$SOURCE_VM" -- subtx-gen \
+  local theoretical=$(( PPS * $(dur_to_seconds "$DURATION") ))
+  local gen_output
+  echo "-- generator: pps=$PPS duration=$DURATION -> ~$theoretical frames --" >&2
+  gen_output=$(lxc exec "$SOURCE_VM" -- subtx-gen \
     -addr "$PROXY_ADDR" \
     -shard-bits "$SHARD_BITS" \
     -subtrees "$SUBTREES" \
@@ -122,8 +125,13 @@ run_generator() {
     -pps "$PPS" \
     -duration "$DURATION" \
     -payload-size "$PAYLOAD_SIZE" \
-    -log-interval 2s
-  echo "$frames"
+    -log-interval 2s 2>&1)
+  echo "$gen_output" >&2
+  # Return the actual sent count so tolerance checks measure delivery ratio
+  # against frames that were actually transmitted, not a theoretical target.
+  local actual
+  actual=$(echo "$gen_output" | grep -oP 'sent=\K[0-9]+' | tail -1)
+  echo "${actual:-$theoretical}"
 }
 
 dur_to_seconds() {

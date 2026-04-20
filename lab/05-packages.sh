@@ -8,7 +8,7 @@ echo "==> [05] Installing network tools on all VMs..."
 
 for vm in source proxy listener1 listener2 listener3; do
   echo "     $vm: apt-get update + install..."
-  lxc exec "$vm" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get update -qq && apt-get install -y $PACKAGES"
+  lxc exec "$vm" -- bash -c "export DEBIAN_FRONTEND=noninteractive; apt-get update -qq && apt-get install -y -o Dpkg::Options::=--force-confnew $PACKAGES"
 done
 
 echo "==> [05] Done."
