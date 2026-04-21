@@ -21,19 +21,20 @@ all:
         listen_port: 9001
         enable_firewall: true
         enable_bgp: false
-        # NOTE: mgmt_cidrs_v4/v6 are set per-host below. They CANNOT be
-        # group-level here because bitcoin-listener's group_vars/all.yml
-        # defines empty defaults and group_vars/all wins over inventory groups.
+        # NOTE: mgmt_cidrs_v4/v6 and num_workers are set per-host below.
+        # They CANNOT be group-level here because bitcoin-listener's
+        # group_vars/all.yml defines the same variables and group_vars/all
+        # wins over inventory group vars in Ansible precedence.
         egress_addr: "127.0.0.1:9100"
         egress_proto: "udp"
         strip_header: false
         metrics_addr: ":9200"
-        num_workers: 2
 
       hosts:
         listener1:
           ansible_host: 10.10.10.31
           ingress_iface: enp6s0
+          num_workers: 1
           mgmt_cidrs_v4: ["10.10.10.0/24"]
           mgmt_cidrs_v6: ["fd20::/64"]
           # Defaults: listen to all shards, all subtrees.
@@ -41,6 +42,7 @@ all:
         listener2:
           ansible_host: 10.10.10.32
           ingress_iface: enp6s0
+          num_workers: 1
           mgmt_cidrs_v4: ["10.10.10.0/24"]
           mgmt_cidrs_v6: ["fd20::/64"]
           shard_include: "0,1"
@@ -49,6 +51,7 @@ all:
         listener3:
           ansible_host: 10.10.10.33
           ingress_iface: enp6s0
+          num_workers: 1
           mgmt_cidrs_v4: ["10.10.10.0/24"]
           mgmt_cidrs_v6: ["fd20::/64"]
           subtree_include: "07015348bf979f23c167d39727aa4d9928fb77c8e51d34ea1e7f27840f956dbb"

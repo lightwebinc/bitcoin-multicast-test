@@ -17,13 +17,14 @@ sleep 2
 echo "==> Snapshot metrics (after)"
 snapshot_metrics "$AFTER"
 
-expected_shard_drop=$(( frames / 2 ))
+expected_received=$(( frames / 2 ))
 expected_subtree_drop=$(( frames / 2 / 8 ))
 expected_forwarded=$(( frames / 2 * 7 / 8 ))
 
-assert_near "listener2 dropped shard_filter"    "$(diff_metric "$BEFORE" "$AFTER" listener2 'bsl_frames_dropped_total|shard_filter')"    "$expected_shard_drop"   0.05
-assert_near "listener2 dropped subtree_exclude" "$(diff_metric "$BEFORE" "$AFTER" listener2 'bsl_frames_dropped_total|subtree_exclude')" "$expected_subtree_drop" 0.20
-assert_near "listener2 forwarded"               "$(diff_metric "$BEFORE" "$AFTER" listener2 bsl_frames_forwarded_total)"                 "$expected_forwarded"    0.10
+# MLD snooping delivers only groups 0+1 to listener2; verify via received count.
+assert_near "listener2 received (shard 0+1 only)" "$(diff_metric "$BEFORE" "$AFTER" listener2 bsl_frames_received_total)"                 "$expected_received"     0.05
+assert_near "listener2 dropped subtree_exclude"    "$(diff_metric "$BEFORE" "$AFTER" listener2 'bsl_frames_dropped_total|subtree_exclude')" "$expected_subtree_drop" 0.20
+assert_near "listener2 forwarded"                  "$(diff_metric "$BEFORE" "$AFTER" listener2 bsl_frames_forwarded_total)"                 "$expected_forwarded"    0.10
 
 if [[ "$SCENARIO_FAIL" -ne 0 ]]; then
   echo "Scenario 02: FAIL"
