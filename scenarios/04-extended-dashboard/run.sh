@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCENARIO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set extended duration BEFORE sourcing common.sh (which defaults to 10s)
+: "${DURATION:=24h}"
+
 source "$SCENARIO_DIR/../lib/common.sh"
 
 BEFORE="$SCENARIO_DIR/metrics.before.tsv"
@@ -9,8 +13,6 @@ AFTER="$SCENARIO_DIR/metrics.after.tsv"
 echo "==> Snapshot metrics (before)"
 snapshot_metrics "$BEFORE"
 
-# Override default duration for extended test (24 hours)
-: "${DURATION:=24h}"
 echo "==> Running extended test: PPS=$PPS, DURATION=$DURATION"
 
 frames=$(run_generator)
