@@ -133,7 +133,7 @@ lxc exec metrics -- curl -s 'http://localhost:9090/api/v1/query?query=bsp_packet
 **Correct Diagnostic Flow:**
 ```bash
 # Step 1: Run the full verification script
-bash /home/light/repo/bitcoin-multicast-test/08-verify.sh
+bash 08-verify.sh
 # Expected: MDB has tap entries for ff05::2 (recv2) and ff05::1+ff05::3 (recv3)
 # Expected: multicast_snooping=1, multicast_querier=1
 # Expected: lxd-bridge-mcast-querier.service active
@@ -169,7 +169,7 @@ for vm in recv1 recv2 recv3; do
   sleep 5
 done
 # Then re-run 08-verify.sh to confirm MDB is correct
-bash /home/light/repo/bitcoin-multicast-test/08-verify.sh
+bash 08-verify.sh
 ```
 
 **Note on tcpdump inside VMs:**

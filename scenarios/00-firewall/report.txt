@@ -205,4 +205,4 @@ PASS  source → http://10.10.10.31:9200/metrics (in-CIDR peer, expected success
 PASS  source → http://10.10.10.32:9200/metrics (in-CIDR peer, expected success)
 PASS  source → http://10.10.10.33:9200/metrics (in-CIDR peer, expected success)
 
-==> [07] Report written to /home/light/repo/bitcoin-multicast-test/scenarios/00-firewall/report.txt
+==> [07] Report written to scenarios/00-firewall/report.txt

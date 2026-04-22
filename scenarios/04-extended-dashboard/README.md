@@ -2,7 +2,7 @@
 
 Drive frames at 1000 pps for an extended duration (24 hours by default) to
 populate Grafana dashboards with meaningful time-series data. This scenario
-is designed for manual execution in tmux on lax to visualize system behavior
+is designed for manual execution in tmux on the source host to visualize system behavior
 under sustained load over long periods.
 
 ## Expected
@@ -18,17 +18,17 @@ Typical rates (based on listener filter configuration):
 | listener2 | ~500 pps             | ~437 pps              |
 | listener3 | ~125 pps             | ~125 pps              |
 
-## Run (manual in tmux on lax)
+## Run (manual in tmux on source host)
 
 ```bash
-# SSH into lax
-ssh lax
+# SSH into source host
+ssh $SOURCE_HOST
 
 # Start tmux session (persistent for 24h+)
 tmux new -s dashboard-test
 
 # In the tmux session:
-cd ~/repo/bitcoin-multicast-test/scenarios/04-extended-dashboard
+cd scenarios/04-extended-dashboard
 
 # Run with default 24-hour duration
 bash run.sh
