@@ -8,11 +8,11 @@ forwarded to the local sink.
 
 Listener-side metric deltas:
 
-| Listener  | `bsl_frames_forwarded_total` Δ   | Rationale                         |
-|-----------|----------------------------------|-----------------------------------|
-| listener1 | ≈ 10 000                         | no filter                         |
-| listener2 | ≈ 10 000 × ½ × ⅞ ≈ 4 375         | half the shards × 7/8 subtrees    |
-| listener3 | ≈ 10 000 × ⅛ ≈ 1 250             | only one subtree allowed          |
+| Listener | `bsl_frames_forwarded_total` Δ | Rationale |
+|-----------|--------------------------------|--------------------------------|
+| listener1 | ≈ 10 000 | no filter |
+| listener2 | ≈ 10 000 × ½ × ⅞ ≈ 4 375 | half the shards × 7/8 subtrees |
+| listener3 | ≈ 10 000 × ⅛ ≈ 1 250 | only one subtree allowed |
 
 Tolerance: ±5% (allowing for bridge drops and end-of-duration truncation).
 

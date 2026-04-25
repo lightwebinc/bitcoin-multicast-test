@@ -61,13 +61,13 @@ sudo systemctl start lxd-bridge-mcast-querier.service
 ## Reports
 
 | File | Type | Rate | Date |
-|------|------|------|------|
+|----------------------------------------------------|------------------------------|--------------------|------------|
 | [functional-scenarios.md](functional-scenarios.md) | Functional (scenarios 01–03) | ~920 pps / 10 s | 2026-04-21 |
 | [smoke-test.md](smoke-test.md) | Smoke test | 100 pps / 30 s | 2026-04-01 |
-| [perf-10k.md](perf-10k.md)   | Perf       | 10,000 pps / 5 min | 2026-04-01 |
-| [perf-25k.md](perf-25k.md)   | Perf       | 25,000 pps / 5 min | 2026-04-01 |
-| [perf-50k.md](perf-50k.md)   | Perf       | 50,000 pps / 5 min | 2026-04-01 |
-| [summary.md](summary.md)     | Summary    | all rates          | 2026-04-01 |
+| [perf-10k.md](perf-10k.md) | Perf | 10,000 pps / 5 min | 2026-04-01 |
+| [perf-25k.md](perf-25k.md) | Perf | 25,000 pps / 5 min | 2026-04-01 |
+| [perf-50k.md](perf-50k.md) | Perf | 50,000 pps / 5 min | 2026-04-01 |
+| [summary.md](summary.md) | Summary | all rates | 2026-04-01 |
 
 See [functional-scenarios.md](functional-scenarios.md) for the latest end-to-end listener scenario results.
 See [summary.md](summary.md) for proxy throughput analysis.

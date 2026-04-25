@@ -7,14 +7,14 @@ baselines under [`../testing/`](../testing/).
 
 ## Index
 
-| Dir                                 | Purpose                                               | Primary listener | Blocked on          |
-|-------------------------------------|-------------------------------------------------------|------------------|---------------------|
-| `00-firewall/`                      | Positive + negative firewall probes                   | all              | —                   |
-| `01-functional-all-shards/`         | All shards, all subtrees                              | listener1        | —                   |
-| `02-functional-shard-filter/`       | Half shards + subtree-exclude                         | listener2        | —                   |
-| `03-functional-subtree-filter/`     | Single subtree-include                                | listener3        | —                   |
-| `04-extended-dashboard/`            | 24h+ 1000 pps for dashboard population                | all              | —                   |
-| `99-nack-retransmit/`               | NACK / deferred retransmit                            | all              | bitcoin-retry-endpoint |
+| Dir | Purpose | Primary listener | Blocked on |
+|---------------------------------|----------------------------------------|------------------|------------------------|
+| `00-firewall/` | Positive + negative firewall probes | all | — |
+| `01-functional-all-shards/` | All shards, all subtrees | listener1 | — |
+| `02-functional-shard-filter/` | Half shards + subtree-exclude | listener2 | — |
+| `03-functional-subtree-filter/` | Single subtree-include | listener3 | — |
+| `04-extended-dashboard/` | 24h+ 1000 pps for dashboard population | all | — |
+| `99-nack-retransmit/` | NACK / deferred retransmit | all | bitcoin-retry-endpoint |
 
 ## How to add a scenario
 

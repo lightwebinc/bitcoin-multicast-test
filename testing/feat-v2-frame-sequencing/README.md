@@ -9,7 +9,7 @@ Baseline comparison: [`../main/summary.md`](../main/summary.md)
 ## What's new in this deployment
 
 | Area | Change |
-|------|--------|
+|-----------------------------|--------------------------------------------------------|
 | `UDP_LISTEN_PORT` | Replaces `LISTEN_PORT` — **breaking env-var rename** |
 | `TCP_LISTEN_PORT` | New; `0` = disabled (default) |
 | `-proxy-seq` | Removed flag (was no-op in config anyway) |
@@ -106,7 +106,7 @@ perf-test ... -pps 50000 -output testing/feat-v2-frame-sequencing/perf-50k.md
 ### Pass criteria
 
 | Test | Criterion | Baseline (`main`) |
-|------|-----------|-------------------|
+|-----------|----------------------------------------|---------------------|
 | Smoke | drop rate 0%, health ok | — |
 | 10 k pps | drop rate 0% | 0.00% |
 | 25 k pps | drop rate ≤ 0.5% | 0.33% |
@@ -119,7 +119,7 @@ perf-test ... -pps 50000 -output testing/feat-v2-frame-sequencing/perf-50k.md
 ## Result files
 
 | File | Status |
-|------|--------|
+|----------------------------------|---------|
 | [`smoke-test.md`](smoke-test.md) | pending |
 | [`perf-10k.md`](perf-10k.md) | pending |
 | [`perf-25k.md`](perf-25k.md) | pending |

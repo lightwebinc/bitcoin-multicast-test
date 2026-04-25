@@ -2,10 +2,10 @@
 
 ## Bridges
 
-| Bridge   | Subnet            | Purpose                                        |
-|----------|-------------------|------------------------------------------------|
-| lxdbr0   | 10.10.10.0/24     | Management — SSH, LXD agent, package installs  |
-| lxdbr1   | fd20::/64 (IPv6)  | Egress fabric — multicast traffic only         |
+| Bridge | Subnet | Purpose |
+|--------|------------------|-----------------------------------------------|
+| lxdbr0 | 10.10.10.0/24 | Management — SSH, LXD agent, package installs |
+| lxdbr1 | fd20::/64 (IPv6) | Egress fabric — multicast traffic only |
 
 Multicast snooping is enabled on `lxdbr1` via sysfs:
 
@@ -25,14 +25,14 @@ host by `deploy.sh`).
 All VMs use Ubuntu 24.04 predictable interface names: `enp5s0` (mgmt,
 lxdbr0) and `enp6s0` (egress, lxdbr1).
 
-| VM        | enp5s0 (mgmt) | enp6s0 (egress) | LXD profile         | Role                  | Firewall   |
-|-----------|---------------|-----------------|---------------------|-----------------------|------------|
-| source    | 10.10.10.10   | fd20::10/64     | ubuntu-small-mcast  | Traffic source        | host-only  |
-| proxy     | 10.10.10.20   | fd20::2/64      | ubuntu-small-mcast  | Ingress proxy         | open       |
-| listener1 | 10.10.10.31   | fd20::21/64     | ubuntu-small-mcast  | Listener (all)        | `enable_firewall=true` |
-| listener2 | 10.10.10.32   | fd20::22/64     | ubuntu-small-mcast  | Listener (filter)     | `enable_firewall=true` |
-| listener3 | 10.10.10.33   | fd20::23/64     | ubuntu-small-mcast  | Listener (subtree)    | `enable_firewall=true` |
-| metrics   | 10.10.10.142  | —               | pre-existing        | Prometheus + Grafana  | host-managed |
+| VM | enp5s0 (mgmt) | enp6s0 (egress) | LXD profile | Role | Firewall |
+|-----------|---------------|-----------------|--------------------|----------------------|------------------------|
+| source | 10.10.10.10 | fd20::10/64 | ubuntu-small-mcast | Traffic source | host-only |
+| proxy | 10.10.10.20 | fd20::2/64 | ubuntu-small-mcast | Ingress proxy | open |
+| listener1 | 10.10.10.31 | fd20::21/64 | ubuntu-small-mcast | Listener (all) | `enable_firewall=true` |
+| listener2 | 10.10.10.32 | fd20::22/64 | ubuntu-small-mcast | Listener (filter) | `enable_firewall=true` |
+| listener3 | 10.10.10.33 | fd20::23/64 | ubuntu-small-mcast | Listener (subtree) | `enable_firewall=true` |
+| metrics | 10.10.10.142 | — | pre-existing | Prometheus + Grafana | host-managed |
 
 Default gateway for all VMs: `10.10.10.1` (lxdbr0 host address).
 
@@ -42,10 +42,10 @@ Listener firewall allow-list:
 
 ## LXD profiles
 
-| Profile              | NICs        | Notes                              |
-|----------------------|-------------|------------------------------------|
-| ubuntu-small-mcast   | eth0 + eth1 | 2 vCPU, 2 GiB RAM, 15 GiB disk     |
-| ubuntu-small-single  | eth0 only   | Same resources; reference only     |
+| Profile | NICs | Notes |
+|---------------------|-------------|--------------------------------|
+| ubuntu-small-mcast | eth0 + eth1 | 2 vCPU, 2 GiB RAM, 15 GiB disk |
+| ubuntu-small-single | eth0 only | Same resources; reference only |
 
 `eth0` attaches to `lxdbr0`; `eth1` attaches to `lxdbr1`. Inside Ubuntu
 24.04 VMs these appear as `enp5s0` and `enp6s0` respectively.

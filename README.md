@@ -36,29 +36,29 @@ bash lab/99-teardown-recv.sh
 
 ## Layout
 
-| Path                          | Purpose                                                           |
-|-------------------------------|-------------------------------------------------------------------|
-| `deploy.sh`                   | Top-level: full lab bring-up                                      |
-| `lab/01-*..09-*`              | LXD provisioning + verification scripts                           |
-| `lab/99-teardown-recv.sh`     | Retire legacy `recv1..3` VMs                                      |
-| `lab/06-netplan/`             | Per-VM static IP netplans                                         |
-| `ansible/`                    | Inventory + thin wrapper for upstream proxy/listener playbooks    |
-| `scenarios/`                  | End-to-end test scenarios (see [`scenarios/README.md`](scenarios/README.md)) |
-| `docs/prometheus/`            | `prometheus.yml` (source of truth for metrics VM)                 |
-| `docs/grafana/`               | Proxy + listener dashboard JSON                                   |
-| `docs/`                       | Network, listener/proxy, and troubleshooting docs                 |
-| `testing/`                    | Historical perf baselines (pre-listener reorg)                    |
+| Path | Purpose |
+|---------------------------|------------------------------------------------------------------------------|
+| `deploy.sh` | Top-level: full lab bring-up |
+| `lab/01-*..09-*` | LXD provisioning + verification scripts |
+| `lab/99-teardown-recv.sh` | Retire legacy `recv1..3` VMs |
+| `lab/06-netplan/` | Per-VM static IP netplans |
+| `ansible/` | Inventory + thin wrapper for upstream proxy/listener playbooks |
+| `scenarios/` | End-to-end test scenarios (see [`scenarios/README.md`](scenarios/README.md)) |
+| `docs/prometheus/` | `prometheus.yml` (source of truth for metrics VM) |
+| `docs/grafana/` | Proxy + listener dashboard JSON |
+| `docs/` | Network, listener/proxy, and troubleshooting docs |
+| `testing/` | Historical perf baselines (pre-listener reorg) |
 
 ## VMs
 
-| VM          | mgmt (enp5s0) | egress (enp6s0) | Role                                           |
-|-------------|---------------|-----------------|------------------------------------------------|
-| `source`    | 10.10.10.10   | fd20::10/64     | runs `subtx-gen` to emit BRC-12 frames         |
-| `proxy`     | 10.10.10.20   | fd20::2/64      | `bitcoin-shard-proxy` ingress                  |
-| `listener1` | 10.10.10.31   | fd20::21/64     | all shards, all subtrees                       |
-| `listener2` | 10.10.10.32   | fd20::22/64     | shards 0,1 + subtree_exclude                   |
-| `listener3` | 10.10.10.33   | fd20::23/64     | all shards + single subtree_include            |
-| `metrics`   | 10.10.10.142  | —               | Prometheus :9090 + Grafana :3000 (pre-existing)|
+| VM | mgmt (enp5s0) | egress (enp6s0) | Role |
+|-------------|---------------|-----------------|-------------------------------------------------|
+| `source` | 10.10.10.10 | fd20::10/64 | runs `subtx-gen` to emit BRC-12 frames |
+| `proxy` | 10.10.10.20 | fd20::2/64 | `bitcoin-shard-proxy` ingress |
+| `listener1` | 10.10.10.31 | fd20::21/64 | all shards, all subtrees |
+| `listener2` | 10.10.10.32 | fd20::22/64 | shards 0,1 + subtree_exclude |
+| `listener3` | 10.10.10.33 | fd20::23/64 | all shards + single subtree_include |
+| `metrics` | 10.10.10.142 | — | Prometheus :9090 + Grafana :3000 (pre-existing) |
 
 ## Documentation
 

@@ -12,11 +12,11 @@ Based on listener filter configuration from `ansible/listener-hosts.yml`:
 
 At 1000 pps for 24 hours (86,400,000 frames total):
 
-| Listener  | Expected received | Expected forwarded |
-|-----------|-------------------|---------------------|
-| listener1 | ~86,400,000       | ~86,400,000         |
-| listener2 | ~43,200,000       | ~37,800,000         |
-| listener3 | ~10,800,000       | ~10,800,000         |
+| Listener | Expected received | Expected forwarded |
+|-----------|-------------------|--------------------|
+| listener1 | ~86,400,000 | ~86,400,000 |
+| listener2 | ~43,200,000 | ~37,800,000 |
+| listener3 | ~10,800,000 | ~10,800,000 |
 
 ## Health indicators
 

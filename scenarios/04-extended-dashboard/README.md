@@ -12,11 +12,11 @@ assertions — this is a data-generation scenario for dashboard visualization.
 
 Typical rates (based on listener filter configuration):
 
-| Listener  | Expected receive rate | Expected forward rate |
-|-----------|----------------------|-----------------------|
-| listener1 | 1000 pps             | 1000 pps              |
-| listener2 | ~500 pps             | ~437 pps              |
-| listener3 | ~125 pps             | ~125 pps              |
+| Listener | Expected receive rate | Expected forward rate |
+|-----------|-----------------------|-----------------------|
+| listener1 | 1000 pps | 1000 pps |
+| listener2 | ~500 pps | ~437 pps |
+| listener3 | ~125 pps | ~125 pps |
 
 ## Run (manual in tmux on source host)
 

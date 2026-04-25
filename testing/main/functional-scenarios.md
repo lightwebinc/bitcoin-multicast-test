@@ -3,7 +3,7 @@
 ## Test Configuration
 
 | Parameter | Value |
-|-----------|-------|
+|------------------|---------------------------------------------------------------------|
 | Date | 2026-04-21 |
 | Proxy address | `[fd20::2]:9000` |
 | Proxy metrics | `http://10.10.10.20:9100` |
@@ -26,7 +26,7 @@ source (fd20::10)
 ## Software Versions
 
 | Component | Version / Commit |
-|-----------|-----------------|
+|------------------------|------------------------------------------------------------------------------------------|
 | bitcoin-shard-proxy | local build, `github.com/lightwebinc/bitcoin-shard-proxy` (feat/v2-frame-sequencing tip) |
 | bitcoin-shard-listener | local build, `github.com/lightwebinc/bitcoin-shard-listener` main tip |
 | bitcoin-shard-common | v0.1.0 (100-byte V2 header with SenderID) |
@@ -38,7 +38,7 @@ source (fd20::10)
 listener2 (shard 0+1, subtree_exclude) forwards ~43.75%, listener3 (subtree_include 1/8) forwards ~12.5%.
 
 | Assertion | Got | Expected | Tolerance | Result |
-|-----------|-----|----------|-----------|--------|
+|---------------------------------------|------|----------|-----------|----------|
 | listener1 forwarded | 9177 | ~9177 | 5% | **PASS** |
 | listener2 forwarded (shard×subtree) | 4006 | ~4014 | 10% | **PASS** |
 | listener3 forwarded (subtree-include) | 1162 | ~1147 | 15% | **PASS** |
@@ -52,7 +52,7 @@ listener2 (shard 0+1, subtree_exclude) forwards ~43.75%, listener3 (subtree_incl
 network-level shard filter (via multicast group join) is verified via received count.
 
 | Assertion | Got | Expected | Tolerance | Result |
-|-----------|-----|----------|-----------|--------|
+|-------------------------------------|------|----------|-----------|----------|
 | listener2 received (shard 0+1 only) | 4526 | ~4540 | 5% | **PASS** |
 | listener2 dropped subtree_exclude | 541 | ~567 | 20% | **PASS** |
 | listener2 forwarded | 3985 | ~3972 | 10% | **PASS** |
@@ -70,7 +70,7 @@ network-level shard filter (via multicast group join) is verified via received c
 ~7/8 of all frames are dropped with `subtree_include_miss`, ~1/8 are forwarded.
 
 | Assertion | Got | Expected | Tolerance | Result |
-|-----------|-----|----------|-----------|--------|
+|---------------------------------------------|------|----------|-----------|----------|
 | listener3 forwarded (subtree-include match) | 1074 | ~1127 | 15% | **PASS** |
 | listener3 dropped subtree_include_miss | 7947 | ~7893 | 5% | **PASS** |
 
@@ -79,7 +79,7 @@ network-level shard filter (via multicast group join) is verified via received c
 ## Summary
 
 | Scenario | Result | Frames | Rate |
-|----------|--------|--------|------|
+|--------------------------------|----------|--------|----------|
 | 01 — functional-all-shards | **PASS** | 9177 | ~920 pps |
 | 02 — functional-shard-filter | **PASS** | 9080 | ~908 pps |
 | 03 — functional-subtree-filter | **PASS** | 9021 | ~902 pps |

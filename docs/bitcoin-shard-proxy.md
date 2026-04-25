@@ -4,17 +4,17 @@ The `proxy` VM runs [bitcoin-shard-proxy](https://github.com/lightwebinc/bitcoin
 
 ## Deployed state
 
-| Item        | Value                                              |
-|-------------|----------------------------------------------------|
-| Binary      | `/usr/local/bin/bitcoin-shard-proxy`               |
-| Config      | `/etc/bitcoin-shard-proxy/config.env`              |
-| Service     | `bitcoin-shard-proxy.service` (systemd, enabled)   |
-| Listen      | `[::]:9000` UDP — BRC-12 frames in                 |
-| Egress      | `enp6s0` → `ff05::/16` (site-local multicast)      |
-| Shard bits  | `2` (4 groups: `ff05::0`–`ff05::3`)                |
-| Metrics     | `http://10.10.10.20:9100/metrics`                  |
-| Health      | `http://10.10.10.20:9100/healthz`                  |
-| Readiness   | `http://10.10.10.20:9100/readyz`                   |
+| Item | Value |
+|------------|--------------------------------------------------|
+| Binary | `/usr/local/bin/bitcoin-shard-proxy` |
+| Config | `/etc/bitcoin-shard-proxy/config.env` |
+| Service | `bitcoin-shard-proxy.service` (systemd, enabled) |
+| Listen | `[::]:9000` UDP — BRC-12 frames in |
+| Egress | `enp6s0` → `ff05::/16` (site-local multicast) |
+| Shard bits | `2` (4 groups: `ff05::0`–`ff05::3`) |
+| Metrics | `http://10.10.10.20:9100/metrics` |
+| Health | `http://10.10.10.20:9100/healthz` |
+| Readiness | `http://10.10.10.20:9100/readyz` |
 
 ## Ansible inventory
 

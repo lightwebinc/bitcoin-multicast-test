@@ -3,7 +3,7 @@
 ## Test Configuration
 
 | Parameter | Value |
-|-----------|-------|
+|----------------|---------------------------|
 | Date | 2026-04-15T13:43:21-06:00 |
 | Proxy address | `[fd20::2]:9000` |
 | Metrics URL | `http://10.10.10.20:9100` |
@@ -18,7 +18,7 @@
 ## Results
 
 | Metric | Value |
-|--------|-------|
+|-------------------------|-------------|
 | Target PPS | 50000 |
 | Actual PPS | 50000 |
 | Frames sent | 1499996 |
@@ -47,7 +47,7 @@
 Packets sent by proxy per shard group (from `bsp_flow_packets_total`):
 
 | Group | Packets | Bytes | % of Total |
-|-------|---------|-------|------------|
+|-----------|-------------|----------------|------------|
 | ff05::0 | 336758 | 150.31 MiB | 25.0% |
 | ff05::1 | 337336 | 150.57 MiB | 25.1% |
 | ff05::2 | 335709 | 149.84 MiB | 24.9% |
@@ -61,12 +61,12 @@ Packets sent by proxy per shard group (from `bsp_flow_packets_total`):
 Packets received at each receiver, broken down by destination multicast group (from `tshark` post-processing):
 
 | Group | recv1 | recv2 | recv3 | Subscribed receivers |
-|-------|--------|--------|--------|------------------------|
+|-----------|-------------|------------|------------|----------------------|
 | ff05:: | 336675 | — | — | recv1 |
 | ff05::1 | 337251 | — | 336964 | recv1, recv3 |
 | ff05::2 | 335637 | 335709 | — | recv1, recv2 |
 | ff05::3 | 335745 | — | 335470 | recv1, recv3 |
-| **Total** | **1345308** | **335709** | **672434** | |
+| **Total** | **1345308** | **335709** | **672434** |  |
 
 **Expected vs actual traffic share** (due to uneven group subscriptions):
 
@@ -81,7 +81,7 @@ Packets received at each receiver, broken down by destination multicast group (f
 Delta of `ip -s link show enp6s0` before and after test:
 
 | VM | Direction | Packets | Bytes | Errors | Dropped |
-|----|-----------|---------|-------|--------|---------|
+|-------|-----------|---------|------------|--------|---------|
 | proxy | RX | 1499171 | 757.74 MiB | 0 | 0 |
 | proxy | TX | 1345644 | 680.14 MiB | 0 | 0 |
 | recv1 | RX | 1345312 | 679.97 MiB | 0 | 0 |
@@ -102,7 +102,7 @@ Delta of `ip -s link show enp6s0` before and after test:
 ## Node Group Membership
 
 | Receiver | Groups joined | Expected share |
-|----------|---------------|----------------|
+|----------|-----------------------------------|----------------|
 | recv1 | ff05::, ff05::1, ff05::2, ff05::3 | 100% |
 | recv2 | ff05::2 | 25% |
 | recv3 | ff05::1, ff05::3 | 50% |

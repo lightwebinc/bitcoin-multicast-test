@@ -9,10 +9,10 @@
 ## Rate Sweep Results
 
 | Target PPS | Sent | Proxy RX | Ingress loss | Proxy drops | Egress errors | TX throughput |
-|-----------|------|----------|-------------|-------------|---------------|---------------|
-| 10,000    | 2,999,999  | 2,999,999  | 0.00% | 0 | 0 | 34.24 Mbps  |
-| 25,000    | 7,499,999  | 7,475,454  | 0.33% | 0 | 0 | 85.60 Mbps  |
-| 50,000    | 14,999,993 | 14,135,144 | 5.77% | 0 | 0 | 171.22 Mbps |
+|------------|------------|------------|--------------|-------------|---------------|---------------|
+| 10,000 | 2,999,999 | 2,999,999 | 0.00% | 0 | 0 | 34.24 Mbps |
+| 25,000 | 7,499,999 | 7,475,454 | 0.33% | 0 | 0 | 85.60 Mbps |
+| 50,000 | 14,999,993 | 14,135,144 | 5.77% | 0 | 0 | 171.22 Mbps |
 
 **Key finding:** The proxy itself drops zero packets at every tested rate. All packet loss originates in the source→proxy LXD virtual NIC / bridge path (ingress fabric), not inside the proxy. The proxy is not the bottleneck in this lab.
 
@@ -23,10 +23,10 @@
 Group-level delivery matches subscriptions exactly at every rate:
 
 | Receiver | Groups | Expected share | 10k actual | 25k actual | 50k actual |
-|----------|--------|----------------|-----------|-----------|-----------|
-| recv1    | 4/4    | 100%           | 100.0%    | 100.0%    | 100.0%    |
-| recv2    | 1/4    | 25%            | 24.8%     | 25.0%     | 25.0%     |
-| recv3    | 2/4    | 50%            | 50.7%     | 50.0%     | 50.0%     |
+|----------|--------|----------------|------------|------------|------------|
+| recv1 | 4/4 | 100% | 100.0% | 100.0% | 100.0% |
+| recv2 | 1/4 | 25% | 24.8% | 25.0% | 25.0% |
+| recv3 | 2/4 | 50% | 50.7% | 50.0% | 50.0% |
 
 MLD snooping correctly prevents unsubscribed groups from being delivered to receivers.
 
@@ -36,11 +36,11 @@ MLD snooping correctly prevents unsubscribed groups from being delivered to rece
 
 Traffic is uniformly distributed across the 4 shard groups (stddev < 0.1% of mean at all rates).
 
-| Rate   | Group stddev |
-|--------|-------------|
-| 10k    | 10 pkts / 750k mean  |
-| 25k    | 633 pkts / 1.87M mean |
-| 50k    | 3,411 pkts / 3.53M mean |
+| Rate | Group stddev |
+|------|-------------------------|
+| 10k | 10 pkts / 750k mean |
+| 25k | 633 pkts / 1.87M mean |
+| 50k | 3,411 pkts / 3.53M mean |
 
 ---
 
@@ -64,7 +64,7 @@ Zero drops at all tested rates. `bsp_packets_received_total` == `bsp_flow_packet
 ## Report Files
 
 | File | Rate |
-|------|------|
-| `report-10k.md`  | 10,000 pps |
-| `report-25k.md`  | 25,000 pps |
-| `report-50k.md`  | 50,000 pps |
+|-----------------|------------|
+| `report-10k.md` | 10,000 pps |
+| `report-25k.md` | 25,000 pps |
+| `report-50k.md` | 50,000 pps |
