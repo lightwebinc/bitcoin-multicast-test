@@ -29,7 +29,7 @@ source (fd20::10)
 |------------------------|------------------------------------------------------------------------------------------|
 | bitcoin-shard-proxy | local build, `github.com/lightwebinc/bitcoin-shard-proxy` (feat/v2-frame-sequencing tip) |
 | bitcoin-shard-listener | local build, `github.com/lightwebinc/bitcoin-shard-listener` main tip |
-| bitcoin-shard-common | v0.1.0 (100-byte V2 header with SenderID) |
+| bitcoin-shard-common | v0.1.0 (92-byte BRC-124/v2 header with SenderID) |
 | subtx-gen | 0225f35 |
 
 ## Scenario 01 — Functional: All Shards
@@ -89,11 +89,12 @@ subtx-gen → proxy (V2 decode + multicast egress) → lxdbr1 (MLD snooping) →
 
 ## Issues Fixed in This Run
 
-1. **Proxy stale binary** — ansible `creates:` guard blocked rebuild on redeploy. Old binary
-   (84-byte V2 header, `jefflightweb` namespace) was incompatible with subtx-gen's 100-byte V2
-   frames, causing `decode_error` on every packet. Fix: removed `creates:` from the build task
-   in both `bitcoin-ingress` and `bitcoin-listener` ansible roles; rebuilt proxy from
-   `github.com/lightwebinc/bitcoin-shard-proxy` (uses `bitcoin-shard-common v0.1.0`, 100-byte header).
+1. **Proxy stale binary** — ansible `creates:` guard blocked rebuild on redeploy. The old
+   binary (pre-stabilization V2 header, `jefflightweb` namespace) was incompatible with
+   subtx-gen's current BRC-124 V2 frames, causing `decode_error` on every packet. Fix: removed
+   `creates:` from the build task in both `bitcoin-ingress` and `bitcoin-listener` ansible
+   roles; rebuilt proxy from `github.com/lightwebinc/bitcoin-shard-proxy` (uses
+   `bitcoin-shard-common v0.1.0`, 92-byte BRC-124 header).
 
 2. **Listener stale binary** — same `creates:` issue; old binary had a non-blocking DIAG polling
    loop that returned EAGAIN continuously and processed almost no frames. Fix: same `creates:`

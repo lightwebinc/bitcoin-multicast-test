@@ -1,6 +1,6 @@
 # Retransmission Testing Guide
 
-This document describes end-to-end testing scenarios for the BRC-125
+This document describes end-to-end testing scenarios for the BRC-TBD-retransmission
 retransmission protocol, including NACK dispatch, ACK/MISS response handling,
 beacon discovery, and tier-based escalation.
 
@@ -51,8 +51,8 @@ and cancels the gap.
 
 ```bash
 # Check listener metrics
-curl -s http://listener1:9400/metrics | grep bsl_nacks_dispatched
-curl -s http://listener1:9400/metrics | grep bsl_gaps_suppressed
+curl -s http://listener1:9200/metrics | grep bsl_nacks_dispatched
+curl -s http://listener1:9200/metrics | grep bsl_gaps_suppressed
 ```
 
 ## Scenario 2: Single-Endpoint MISS + Escalation
@@ -79,7 +79,7 @@ next endpoint without backoff.
 ### Verification
 
 ```bash
-curl -s http://listener1:9400/metrics | grep bsl_nacks_dispatched
+curl -s http://listener1:9200/metrics | grep bsl_nacks_dispatched
 # Should show 2 NACKs dispatched
 ```
 

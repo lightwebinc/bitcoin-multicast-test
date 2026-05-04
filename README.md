@@ -53,7 +53,7 @@ bash lab/99-teardown-recv.sh
 
 | VM | mgmt (enp5s0) | egress (enp6s0) | Role |
 |-------------|---------------|-----------------|-------------------------------------------------|
-| `source` | 10.10.10.10 | fd20::10/64 | runs `subtx-gen` to emit BRC-12 frames |
+| `source`    | 10.10.10.10   | fd20::10/64     | runs `subtx-gen` to emit BRC-124/v2 frames      |
 | `proxy` | 10.10.10.20 | fd20::2/64 | `bitcoin-shard-proxy` ingress |
 | `listener1` | 10.10.10.31 | fd20::21/64 | all shards, all subtrees |
 | `listener2` | 10.10.10.32 | fd20::22/64 | shards 0,1 + subtree_exclude |
