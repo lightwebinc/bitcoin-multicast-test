@@ -164,11 +164,26 @@ journalctl -u bitcoin-shard-listener | grep "upserted endpoint"
 ## Running Scenarios
 
 Each scenario can be run manually using the LXD lab, or automated via scripts
-in `scenarios/`. Existing automated scenarios (e.g. `00-firewall/`,
-`01-functional-all-shards/`, `99-nack-retransmit/`) follow the convention
-`NN-name/run.sh`. Future work will add a per-scenario directory for each of
-the seven scenarios above using that same convention; concrete numbers will
-be assigned when the scripts land.
+in `scenarios/`. Existing automated scenarios follow the convention
+`NN-name/run.sh`.
+
+Current state of the seven scenarios above:
+
+| # | Scenario               | Automated script                         | Status      | Blockers                        |
+|---|------------------------|------------------------------------------|-------------|---------------------------------|
+| 1 | Single-endpoint ACK    | `scenarios/10-single-endpoint-ack/`      | Implemented | —                               |
+| 2 | MISS + escalation      | (pending)                                | Blocked     | needs ≥2 retry VMs              |
+| 3 | Cross-tier escalation  | (pending)                                | Blocked     | needs ≥3 retry VMs              |
+| 4 | Beacon discovery       | (pending)                                | Ready       | script TBD                      |
+| 5 | Beacon eviction        | (pending)                                | Ready       | script TBD                      |
+| 6 | Draining flag          | (pending)                                | Ready       | script TBD                      |
+| 7 | Response suppression   | (pending)                                | Ready       | script TBD                      |
+
+Scenarios 4–7 are "Ready" now that `bitcoin-retry-endpoint` wires
+`-beacon-*` and `-suppress-ack` / `-suppress-miss` flags into runtime
+behaviour; only the driver scripts remain. Scenarios 2 and 3 require the
+LXD lab to host additional retry-endpoint VMs (`retry2`, `retry3`) with
+distinct tier/preference values.
 
 ## Metrics Reference
 

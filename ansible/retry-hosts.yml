@@ -39,6 +39,7 @@ all:
           num_workers: 1
           mgmt_cidrs_v4: ["10.10.10.0/24"]
           mgmt_cidrs_v6: ["fd20::/64"]
+          nack_addr: "fd20::24"       # explicit bind addr — avoids SLAAC source selection
           beacon_tier: 0
           beacon_preference: 128
           # Lab rate limits — loosened so the NACK-storm a single subtx-gen
@@ -46,7 +47,9 @@ all:
           # not throttled. Production deployments should keep role defaults.
           rl_ip_rate: 100000
           rl_sender_rate: 1000000
-          rl_sequence_max: 10000
+          rl_sequence_max: 1000000
+          rl_sequence_window: "10s"   # short window so back-to-back scenarios
+                                      # don't contaminate each other's state
           # The lab provisions netplan via lab/06-netplan/retry1.yaml (static
           # fd20::24 on enp6s0). Don't let the role overwrite it.
           manage_netplan: false
