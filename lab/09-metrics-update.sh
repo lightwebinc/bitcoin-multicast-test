@@ -15,6 +15,7 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROM_FILE="$REPO_DIR/docs/prometheus/prometheus.yml"
 DASH_PROXY="$REPO_DIR/docs/grafana/bitcoin-shard-proxy.json"
 DASH_LISTENER="$REPO_DIR/docs/grafana/bitcoin-shard-listener.json"
+DASH_RETRY="$REPO_DIR/docs/grafana/bitcoin-retry-endpoint.json"
 
 METRICS_VM=${METRICS_VM:-metrics}
 METRICS_IP=${METRICS_IP:-10.10.10.142}
@@ -44,7 +45,7 @@ lxc exec "$METRICS_VM" -- curl -s http://localhost:9090/api/v1/targets \
      || cat)
 
 echo "==> [09] Importing Grafana dashboards via HTTP API"
-for dash in "$DASH_PROXY" "$DASH_LISTENER"; do
+for dash in "$DASH_PROXY" "$DASH_LISTENER" "$DASH_RETRY"; do
   [[ -f "$dash" ]] || { echo "     skipping $dash (missing)"; continue; }
   payload=$(jq -n --slurpfile d "$dash" '{dashboard: $d[0], overwrite: true, folderId: 0}')
   code=$(curl -s -o /tmp/dash.out -w '%{http_code}' \

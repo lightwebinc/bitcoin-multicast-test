@@ -4,7 +4,7 @@
 set -euo pipefail
 exec </dev/null
 
-VMS=(source proxy listener1 listener2 listener3)
+VMS=(source proxy listener1 listener2 listener3 retry1)
 
 wait_for_vm() {
   local vm="$1"

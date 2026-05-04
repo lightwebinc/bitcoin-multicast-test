@@ -164,18 +164,11 @@ journalctl -u bitcoin-shard-listener | grep "upserted endpoint"
 ## Running Scenarios
 
 Each scenario can be run manually using the LXD lab, or automated via scripts
-in `scenarios/`. Future work will add shell scripts for each scenario above:
-
-```
-scenarios/
-  04-single-endpoint-ack.sh
-  05-miss-escalation.sh
-  06-cross-tier-escalation.sh
-  07-beacon-discovery.sh
-  08-beacon-eviction.sh
-  09-draining-flag.sh
-  10-response-suppression.sh
-```
+in `scenarios/`. Existing automated scenarios (e.g. `00-firewall/`,
+`01-functional-all-shards/`, `99-nack-retransmit/`) follow the convention
+`NN-name/run.sh`. Future work will add a per-scenario directory for each of
+the seven scenarios above using that same convention; concrete numbers will
+be assigned when the scripts land.
 
 ## Metrics Reference
 

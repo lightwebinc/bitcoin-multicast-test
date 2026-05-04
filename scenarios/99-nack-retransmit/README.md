@@ -1,8 +1,20 @@
-# Scenario 99 — NACK / retransmit (PLACEHOLDER)
+# Scenario 99 — NACK / retransmit (active)
 
-**Status:** blocked on [`bitcoin-retry-endpoint`](https://github.com/lightwebinc/bitcoin-retry-endpoint)
-being implemented. Do not run — the listener's `retry_endpoints` list
-is empty in the lab inventory, so NACKs dispatch to nowhere.
+**Status:** active as of 2026-05-04. See [`expected.md`](expected.md) for the
+pass criteria and the most recent run, and run [`run.sh`](run.sh) to execute.
+
+Topology requires a `retry1` VM (provisioned by `lab/03-launch.sh`,
+`lab/06-netplan.sh`, etc.) and the `bitcoin-retransmission` ansible
+playbook deployed via:
+
+```bash
+cd ~/repo/bitcoin-retransmission/ansible
+ansible-playbook -i ~/repo/bitcoin-multicast-test/ansible/retry-hosts.yml site.yml
+```
+
+Listeners must be re-deployed (or `--tags firewall,listener`) after
+`retry_endpoints` is set per-host in `listener-hosts.yml`, otherwise the
+listener firewall blocks outbound NACK UDP.
 
 ## Intended design
 

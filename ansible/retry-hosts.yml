@@ -1,0 +1,52 @@
+---
+# Inventory for the bitcoin-retransmission playbook (github.com/lightwebinc/bitcoin-retransmission).
+# Invoke via:  cd ~/repo/bitcoin-retransmission/ansible &&
+#              ansible-playbook -i ~/repo/bitcoin-multicast-test/ansible/retry-hosts.yml site.yml
+#
+# retry1 is the first retry endpoint on the lax LXD lab.
+# Host-level vars (ingress_iface, egress_iface, mc_iface, mgmt_cidrs_*) override
+# group_vars/all.yml in the bitcoin-retransmission role.
+
+all:
+  children:
+    retry_endpoint_nodes:
+      vars:
+        # Lab: skip clone+build by pushing a pre-built binary from controller.
+        # Build: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -buildvcs=false \
+        #   -o /tmp/bitcoin-retry-endpoint .  (in ~/repo/bitcoin-retry-endpoint)
+        retry_local_binary: "/tmp/bitcoin-retry-endpoint"
+        ansible_user: ubuntu
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+        ingress_mode: ethernet
+        shard_bits: 2
+        mc_scope: site
+        listen_port: 9001           # multicast frame ingress (matches proxy/listener)
+        nack_port: 9300             # NACK listener (listeners dial this)
+        egress_port: 9001           # retransmission multicast egress
+        cache_backend: memory
+        cache_ttl: "10m"
+        # NOTE: any var that bitcoin-retransmission's playbook group_vars/all.yml
+        # defines (rl_*, enable_firewall, manage_netplan, ...) MUST be set
+        # host-level — playbook group_vars beats inventory group vars in
+        # Ansible precedence. See per-host block below.
+
+      hosts:
+        retry1:
+          ansible_host: 10.10.10.34
+          mc_iface: enp6s0
+          egress_iface: enp6s0
+          ingress_iface: enp6s0
+          num_workers: 1
+          mgmt_cidrs_v4: ["10.10.10.0/24"]
+          mgmt_cidrs_v6: ["fd20::/64"]
+          beacon_tier: 0
+          beacon_preference: 128
+          # Lab rate limits — loosened so the NACK-storm a single subtx-gen
+          # run produces (≈10k NACKs/10s × 3 listeners × NACK_MAX_RETRIES) is
+          # not throttled. Production deployments should keep role defaults.
+          rl_ip_rate: 100000
+          rl_sender_rate: 1000000
+          rl_sequence_max: 10000
+          # The lab provisions netplan via lab/06-netplan/retry1.yaml (static
+          # fd20::24 on enp6s0). Don't let the role overwrite it.
+          manage_netplan: false
