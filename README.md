@@ -13,7 +13,7 @@ as the traffic source.
  source ──► proxy (ingress) ──► ff05::%enp6s0 ──► listener1 / listener2 / listener3
                                       │                        │                 │
                                       ▼                        │ NACK (unicast)  ▼
-                                    retry1 ◄────────────────────┘          sink :9100
+                                    retry1 ◄───────────────────┘          sink :9100
                                       │
                                       └──► ff05::%enp6s0 (retransmit → listeners)
 ```
