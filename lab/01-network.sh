@@ -17,7 +17,11 @@ else
     bridge.mtu=1500
 fi
 
-echo "==> [01] Enabling multicast snooping on lxdbr1..."
+echo "==> [01] Enabling multicast snooping + querier on lxdbr1..."
 echo 1 > /sys/devices/virtual/net/lxdbr1/bridge/multicast_snooping
+echo 1 > /sys/devices/virtual/net/lxdbr1/bridge/multicast_querier
+
+echo "==> [01] Tuning lxdbr1 bridge performance..."
+ip link set lxdbr1 txqueuelen 10000
 
 echo "==> [01] Done."

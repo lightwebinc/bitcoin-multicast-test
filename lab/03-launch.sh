@@ -38,4 +38,13 @@ done
 echo "==> [03] All VMs running:"
 lxc list
 
+echo "==> [03] Tuning lxdbr1 tap interfaces (txqlen + mrouter)..."
+for iface in $(ls /sys/devices/virtual/net/lxdbr1/brif/ 2>/dev/null); do
+  ip link set "$iface" txqueuelen 10000
+done
+for f in /sys/devices/virtual/net/lxdbr1/brif/*/multicast_router; do
+  echo 2 > "$f"
+done
+echo "     tap txqlen=10000, mrouter=2 (always-on) applied"
+
 echo "==> [03] Done."
