@@ -11,10 +11,11 @@ as the traffic source.
 
 ```
  source ──► proxy (ingress) ──► ff05::%enp6s0 ──► listener1 / listener2 / listener3
-                                      │                        │                 │
-                                      ▼                        │ NACK (unicast)  ▼
-                                    retry1 ◄───────────────────┘          sink :9100
-                                      │
+                                      │                     │  NACK (escalating)    sink :9100
+                                      ▼                     │  ① retry1 (T0/P128) → MISS
+                                    retry1                   │  ② retry2 (T0/P64)  → MISS
+                                    retry2                   │  ③ retry3 (T1/P128) → ACK
+                                    retry3 ◄───────────────────┘
                                       └──► ff05::%enp6s0 (retransmit → listeners)
 ```
 
@@ -54,7 +55,9 @@ bash deploy.sh           # provisions everything from scratch
 | `listener1` | 10.10.10.31 | fd20::21/64 | all shards, all subtrees |
 | `listener2` | 10.10.10.32 | fd20::22/64 | shards 0,1 + subtree_exclude |
 | `listener3` | 10.10.10.33 | fd20::23/64 | all shards + single subtree_include |
-| `retry1`    | 10.10.10.34 | fd20::24/64 | `bitcoin-retry-endpoint` frame cache + NACK retransmit |
+| `retry1`    | 10.10.10.34 | fd20::24/64 | `bitcoin-retry-endpoint` Tier 0 / Pref 128 (primary) |
+| `retry2`    | 10.10.10.35 | fd20::25/64 | `bitcoin-retry-endpoint` Tier 0 / Pref 64 (secondary) |
+| `retry3`    | 10.10.10.36 | fd20::26/64 | `bitcoin-retry-endpoint` Tier 1 / Pref 128 (escalation target) |
 | `metrics` | 10.10.10.142 | — | Prometheus :9090 + Grafana :3000 (pre-existing) |
 
 ## Documentation

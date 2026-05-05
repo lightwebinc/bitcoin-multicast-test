@@ -1,0 +1,7 @@
+retry3	bre_nack_requests_total	1741012
+retry3	bre_retransmits_total	8
+retry3	bre_cache_hits_total	8
+retry3	bre_cache_misses_total	171
+retry3	bre_rate_limit_drops_total	1744795
+retry3	bre_rate_limit_drops_total|level=ip	1745647
+retry3	bre_rate_limit_drops_total|level=sequence	155

@@ -25,6 +25,9 @@ source "$SCENARIO_DIR/../lib/common.sh"
 : "${RETRY_METRICS_PORT:=9400}"
 : "${RETRY_LISTEN_PORT:=9001}"
 
+RETRY2_VM=retry2;  RETRY2_IP=10.10.10.35
+RETRY3_VM=retry3;  RETRY3_IP=10.10.10.36
+
 BEFORE="$SCENARIO_DIR/metrics.before.tsv"
 AFTER="$SCENARIO_DIR/metrics.after.tsv"
 RETRY_BEFORE="$SCENARIO_DIR/retry.before.tsv"
@@ -47,25 +50,35 @@ snapshot_retry() {
 }
 
 # --- Ingress block / unblock helpers -----------------------------------------
+# All three endpoints must be blocked — beacon discovery means listeners escalate
+# to retry2/retry3 on MISS, so blocking only retry1 never forces unrecovered gaps.
 block_retry_ingress() {
-  echo "==> Blocking multicast ingress on $RETRY_VM (port $RETRY_LISTEN_PORT)"
-  lxc exec "$RETRY_VM" -- ip6tables -I INPUT -p udp --dport "$RETRY_LISTEN_PORT" -j DROP
+  echo "==> Blocking multicast ingress on all retry endpoints (port $RETRY_LISTEN_PORT)"
+  for vm in "$RETRY_VM" "$RETRY2_VM" "$RETRY3_VM"; do
+    lxc exec "$vm" -- ip6tables -I INPUT -i enp6s0 -p udp --dport "$RETRY_LISTEN_PORT" -j DROP
+    echo "     $vm: ingress blocked"
+  done
 }
 
 unblock_retry_ingress() {
-  echo "==> Unblocking multicast ingress on $RETRY_VM"
-  lxc exec "$RETRY_VM" -- ip6tables -D INPUT -p udp --dport "$RETRY_LISTEN_PORT" -j DROP 2>/dev/null || true
+  echo "==> Unblocking multicast ingress on all retry endpoints"
+  for vm in "$RETRY_VM" "$RETRY2_VM" "$RETRY3_VM"; do
+    lxc exec "$vm" -- ip6tables -D INPUT -i enp6s0 -p udp --dport "$RETRY_LISTEN_PORT" -j DROP 2>/dev/null || true
+  done
 }
 
-# Always clean up the iptables rule, even on failure.
+# Always clean up the iptables rules, even on failure.
 trap unblock_retry_ingress EXIT
 
-# --- Phase 1: restart retry endpoint to flush cache, then block ingress ------
-echo "==> Restarting $RETRY_VM service to flush in-memory cache"
-lxc exec "$RETRY_VM" -- systemctl restart bitcoin-retry-endpoint
+# --- Phase 1: restart all retry endpoints to flush caches, then block ingress ------
+echo "==> Restarting all retry endpoint services to flush in-memory caches"
+for vm in "$RETRY_VM" "$RETRY2_VM" "$RETRY3_VM"; do
+  lxc exec "$vm" -- systemctl restart bitcoin-retry-endpoint
+  echo "     $vm: restarted"
+done
 sleep 2
 
-# Verify retry endpoint is back up.
+# Verify primary retry endpoint is back up.
 if ! retry_metric bre_frames_received_total >/dev/null 2>&1; then
   echo "FAIL  $RETRY_VM metrics endpoint not reachable after restart"
   exit 1
@@ -141,8 +154,8 @@ bsl_nacks_dispatched_total   = $nacks_dispatched
 bsl_gaps_suppressed_total    = $gaps_suppressed
 bsl_gaps_unrecovered_total   = $gaps_unrecovered
 
--- Retry endpoint ($RETRY_VM) --
-bre_frames_cached_total      = $frames_cached  (expect 0 — ingress was blocked)
+-- Retry endpoint $RETRY_VM (all 3 blocked — spot-check retry1) --
+bre_frames_cached_total      = $frames_cached  (expect 0 — ingress was blocked on all)
 bre_nack_requests_total      = $nacks_received
 bre_cache_hits_total         = $cache_hits
 bre_cache_misses_total       = $cache_misses

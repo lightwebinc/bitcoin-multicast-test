@@ -48,6 +48,8 @@ scrape_configs:
     static_configs:
       - targets:
           - '10.10.10.34:9400'
+          - '10.10.10.35:9400'
+          - '10.10.10.36:9400'
         labels:
           instance_role: retry_endpoint
     relabel_configs:
@@ -55,3 +57,11 @@ scrape_configs:
         regex: '10\.10\.10\.34:9400'
         target_label: instance
         replacement: 'retry1'
+      - source_labels: [__address__]
+        regex: '10\.10\.10\.35:9400'
+        target_label: instance
+        replacement: 'retry2'
+      - source_labels: [__address__]
+        regex: '10\.10\.10\.36:9400'
+        target_label: instance
+        replacement: 'retry3'

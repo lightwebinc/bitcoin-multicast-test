@@ -4,6 +4,7 @@ This guide documents common issues and solutions discovered during testing of th
 
 ## Table of Contents
 - [Listener Issues](#listener-issues)
+- [Beacon Discovery Issues](#beacon-discovery-issues)
 - [Dashboard Issues](#dashboard-issues)
 - [Multicast Delivery Problems](#multicast-delivery-problems)
 - [Connectivity Issues](#connectivity-issues)
@@ -61,6 +62,79 @@ and compare:
 lxc exec source -- subtx-gen -subtrees 8 -subtree-seed 'lax-lab-2026' -print-subtrees
 grep subtree_ ansible/listener-hosts.yml
 ```
+
+## Beacon Discovery Issues
+
+### Retry endpoints not appearing in listener registry
+
+**Symptoms:** `journalctl -u bitcoin-shard-listener | grep "upserted endpoint"` shows
+no output even after 10+ seconds. `bsl_gaps_unrecovered_total` climbs because
+the registry is empty and no NACKs can be dispatched.
+
+**Likely cause — wrong multicast egress interface:**
+On multi-homed hosts (management NIC `enp5s0` + fabric NIC `enp6s0`), the Linux
+kernel may route `ff05::` multicast via the default-route interface (management)
+instead of the fabric NIC, causing beacons to arrive on the wrong interface and
+be dropped by the listener's nftables rule.
+
+**Diagnosis:**
+```bash
+# On the LXD host, capture on the fabric bridge
+sudo tcpdump -i lxdbr1 -n 'udp and dst port 9300' &
+# Wait 6s; should see packets from fd20::24, fd20::25, fd20::26
+```
+
+**Fix:** `bitcoin-retry-endpoint/beacon/beacon.go` sets `IPV6_MULTICAST_IF` via
+`syscall.SetsockoptInt` after `net.DialUDP`. If beacons still don't arrive,
+verify the `MC_IFACE` env var on the retry endpoint is set to the fabric
+interface (`enp6s0`).
+
+**Verification:**
+```bash
+# Confirm beacons arriving at listener
+lxc exec listener1 -- journalctl -u bitcoin-shard-listener --since "1 min ago" | grep upsert
+# Expected: discovery: upserted endpoint addr=... tier=0 pref=128
+```
+
+---
+
+### High `bsl_gaps_unrecovered_total` with multiple retry endpoints
+
+**Symptoms:** Scenario 13 shows `gaps_unrecovered > 0`. Each MISS response from
+a retry endpoint consumes one retry counter. With 3 beacon + 3 static seed
+entries in the registry (6 total) and `NACK_MAX_RETRIES=5` (default), the
+counter is exhausted at entry #5 — one short of the last seed.
+
+**Fix:** Set `NACK_MAX_RETRIES=8` on all listeners:
+```bash
+for vm in listener1 listener2 listener3; do
+  lxc exec $vm -- sed -i 's/^NACK_MAX_RETRIES=.*/NACK_MAX_RETRIES=8/' \
+    /etc/bitcoin-shard-listener/config.env
+  lxc exec $vm -- systemctl restart bitcoin-shard-listener
+done
+```
+
+Persist the change in `ansible/listener-hosts.yml` under each listener host's
+vars block.
+
+---
+
+### `bsl_gaps_detected_total` is ~10× higher than expected
+
+**Symptoms:** After scenario 13 starts, gap detection count far exceeds the
+number of natural multicast losses. `bsl_gaps_suppressed_total` is low
+relative to `bsl_gaps_detected_total`, so most gaps appear unrecovered.
+
+**Root cause:** Phantom gaps from retransmitted frames. Before the 2026-05-05
+fix to `nack/nack.go`, `Observe()` created a new gap entry for every
+out-of-order or retransmitted frame (`prevSeq < lastCurSeq`). Each retransmit
+from a retry endpoint triggered dozens of false gaps.
+
+**Fix:** Already applied to `bitcoin-shard-listener/nack/nack.go`. Rebuild and
+redeploy the listener binary. After the fix, `bsl_gaps_detected_total` should
+match the actual number of multicast delivery losses.
+
+---
 
 ## Dashboard Issues
 

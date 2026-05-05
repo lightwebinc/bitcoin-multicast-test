@@ -4,7 +4,7 @@
 set -euo pipefail
 exec </dev/null
 
-VMS=(source proxy listener1 listener2 listener3 retry1)
+VMS=(source proxy listener1 listener2 listener3 retry1 retry2 retry3)
 
 wait_for_vm() {
   local vm="$1"
@@ -40,10 +40,10 @@ lxc list
 
 echo "==> [03] Tuning lxdbr1 tap interfaces (txqlen + mrouter)..."
 for iface in $(ls /sys/devices/virtual/net/lxdbr1/brif/ 2>/dev/null); do
-  ip link set "$iface" txqueuelen 10000
+  sudo ip link set "$iface" txqueuelen 10000
 done
 for f in /sys/devices/virtual/net/lxdbr1/brif/*/multicast_router; do
-  echo 2 > "$f"
+  sudo tee "$f" <<< 2 > /dev/null
 done
 echo "     tap txqlen=10000, mrouter=2 (always-on) applied"
 

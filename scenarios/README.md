@@ -17,6 +17,8 @@ baselines under [`../testing/`](../testing/).
 | `10-single-endpoint-ack/` | Low-PPS per-gap ACK recovery | all | bitcoin-retry-endpoint |
 | `11-permanent-gap-miss/` | Cache-empty MISS → unrecovered gaps | all | bitcoin-retry-endpoint |
 | `12-burst-gap-ratelimit/` | Multi-frame bursts → rate limiter fires | all | bitcoin-retry-endpoint |
+| `13-miss-escalation-tier/` | 2-hop MISS escalation: retry1→retry2→retry3 ACK | all | bitcoin-retry-endpoint |
+| `14-multi-endpoint-ratelimit/` | Rogue + compromised-listener NACK flood; RL fires on all 3 endpoints | all | bitcoin-retry-endpoint |
 | `99-nack-retransmit/` | NACK / deferred retransmit (aggregate) | all | bitcoin-retry-endpoint |
 
 ## How to add a scenario
