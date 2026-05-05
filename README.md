@@ -2,17 +2,20 @@
 
 LXD-based end-to-end test lab for the Bitcoin sharding pipeline. The lab
 validates
-[`bitcoin-shard-proxy`](https://github.com/lightwebinc/bitcoin-shard-proxy)
-and [`bitcoin-shard-listener`](https://github.com/lightwebinc/bitcoin-shard-listener)
+[`bitcoin-shard-proxy`](https://github.com/lightwebinc/bitcoin-shard-proxy),
+[`bitcoin-shard-listener`](https://github.com/lightwebinc/bitcoin-shard-listener),
+and [`bitcoin-retry-endpoint`](https://github.com/lightwebinc/bitcoin-retry-endpoint)
 working together over an IPv6 multicast fabric, using
 [`bitcoin-subtx-generator`](https://github.com/lightwebinc/bitcoin-subtx-generator)
 as the traffic source.
 
 ```
  source ──► proxy (ingress) ──► ff05::%enp6s0 ──► listener1 / listener2 / listener3
-                                                            │
-                                                            ▼
-                                                     127.0.0.1:9100 (sink)
+                                      │                        │                 │
+                                      ▼                        │ NACK (unicast)  ▼
+                                    retry1 ◄────────────────────┘          sink :9100
+                                      │
+                                      └──► ff05::%enp6s0 (retransmit → listeners)
 ```
 
 Tests target **1000 pps / 10 s** (functional, ~10 000 frames). The LXD
@@ -28,19 +31,12 @@ chmod +x deploy.sh
 bash deploy.sh           # provisions everything from scratch
 ```
 
-If you previously deployed `recv1..3`, retire them first:
-
-```bash
-bash lab/99-teardown-recv.sh
-```
-
 ## Layout
 
 | Path | Purpose |
 |---------------------------|------------------------------------------------------------------------------|
 | `deploy.sh` | Top-level: full lab bring-up |
 | `lab/01-*..09-*` | LXD provisioning + verification scripts |
-| `lab/99-teardown-recv.sh` | Retire legacy `recv1..3` VMs |
 | `lab/06-netplan/` | Per-VM static IP netplans |
 | `ansible/` | Inventory + thin wrapper for upstream proxy/listener playbooks |
 | `scenarios/` | End-to-end test scenarios (see [`scenarios/README.md`](scenarios/README.md)) |
@@ -58,6 +54,7 @@ bash lab/99-teardown-recv.sh
 | `listener1` | 10.10.10.31 | fd20::21/64 | all shards, all subtrees |
 | `listener2` | 10.10.10.32 | fd20::22/64 | shards 0,1 + subtree_exclude |
 | `listener3` | 10.10.10.33 | fd20::23/64 | all shards + single subtree_include |
+| `retry1`    | 10.10.10.34 | fd20::24/64 | `bitcoin-retry-endpoint` frame cache + NACK retransmit |
 | `metrics` | 10.10.10.142 | — | Prometheus :9090 + Grafana :3000 (pre-existing) |
 
 ## Documentation
@@ -65,6 +62,7 @@ bash lab/99-teardown-recv.sh
 - [`docs/network.md`](docs/network.md) — bridge layout, VM IPs, multicast groups
 - [`docs/bitcoin-shard-proxy.md`](docs/bitcoin-shard-proxy.md) — proxy deploy notes
 - [`docs/bitcoin-shard-listener.md`](docs/bitcoin-shard-listener.md) — listener deploy notes
+- [`docs/retransmission-testing.md`](docs/retransmission-testing.md) — retry-endpoint deploy + NACK testing notes
 - [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — common issues
 - [`scenarios/README.md`](scenarios/README.md) — test scenario index
 
