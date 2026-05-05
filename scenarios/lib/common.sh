@@ -63,7 +63,7 @@ snapshot_metrics() {
              'bsl_frames_dropped_total|subtree_include_miss' \
              'bsl_frames_dropped_total|bad_frame' \
              bsl_gaps_detected_total bsl_gaps_suppressed_total \
-             bsl_nacks_dispatched_total bsl_nacks_unrecovered_total; do
+             bsl_nacks_dispatched_total bsl_gaps_unrecovered_total; do
       local name="${m%%|*}"
       local filter=""
       if [[ "$m" == *'|'* ]]; then
