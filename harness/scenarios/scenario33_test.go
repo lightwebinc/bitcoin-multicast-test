@@ -10,7 +10,7 @@ import (
 
 // Scenario 33 — BRC-132 subtree data: fragmentation
 //
-// Mirrors scenarios/33-subtree-data-fragmentation/run.sh.
+// Ported from the retired bash scenario 33.
 //
 // Proxy with FRAG_MTU=1500. Large BRC-132 payloads (256 nodes × 32B = 8192B)
 // are fragmented. Listeners reassemble and forward.

@@ -11,7 +11,7 @@ import (
 
 // Scenario 31 — BRC-131 block announcement: NACK retransmission
 //
-// Mirrors scenarios/31-block-announce-retransmit/run.sh.
+// Ported from the retired bash scenario 31.
 //
 // 10% loss on listeners + block announcements. Retry endpoint caches the V4
 // frames. Listeners detect gaps and NACK → retransmit fills them.

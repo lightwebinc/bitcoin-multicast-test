@@ -6,7 +6,8 @@ End-to-end test suite for the Bitcoin multicast sharding pipeline. Validates
 [`shard-proxy`](https://github.com/lightwebinc/shard-proxy),
 [`shard-listener`](https://github.com/lightwebinc/shard-listener),
 [`retry-endpoint`](https://github.com/lightwebinc/retry-endpoint),
-and [`subtx-generator`](https://github.com/lightwebinc/subtx-generator)
+[`subtx-generator`](https://github.com/lightwebinc/subtx-generator),
+and [`shard-manifest`](https://github.com/lightwebinc/shard-manifest)
 working together over an IPv6 multicast fabric.
 
 This repo is the **integration** test suite — the Go Docker harness:
@@ -32,14 +33,35 @@ This repo is the **integration** test suite — the Go Docker harness:
 
 ## Quickstart — Go Docker harness
 
-Requires Docker and Go 1.25+. Tests run as root (for network namespaces).
+### Prerequisites
+
+Docker, Go 1.25+, and root (tests create network namespaces). The harness
+compiles component binaries from **sibling checkouts** — clone the component
+repos side by side under one parent directory:
+
+```
+<parent>/
+├── multicast-test      (this repo)
+├── shard-common
+├── shard-proxy
+├── shard-listener
+├── retry-endpoint
+├── subtx-generator
+└── shard-manifest      (scenario 73)
+```
+
+If the parent directory has a `go.work` listing the repos, the builder uses
+it; otherwise it injects a temporary `replace` directive pointing at the
+sibling `shard-common` checkout.
+
+### Running
 
 ```bash
 make test          # all harness scenarios (~30 min)
 make test-quick    # tier-1 filter scenarios (~60s)
 make test-retransmit  # NACK/retransmit scenarios
 make test-frag     # fragmentation scenarios
-make test-bgp      # BGP ingress / anycast scenarios
+make test-bgp      # BGP ingress / anycast scenarios (currently all skip — deferred)
 make test-manifest # BRC-139 manifest / auto-shard-config scenarios
 make test-coalesce # BRC-142 coalescing / bundle-frame scenarios
 make help          # show all targets
@@ -51,75 +73,28 @@ Individual scenarios:
 sudo go test ./harness/scenarios/... -v -run TestScenario01
 ```
 
-### SSM (Source-Specific Multicast)
+## Scenarios
 
-Two scenarios validate the SSM rollout (see
-[bsv-multicast SSM Support Plan](https://github.com/lightwebinc/bsv-multicast/blob/main/DESIGN.md#source-specific-multicast-ssm)):
+[`SCENARIOS.md`](SCENARIOS.md) is the canonical per-scenario index (titles,
+test names, make-target filters). Highlights:
 
-- **Scenario 60** — `TestScenario60_SSMLoopback`: process-local
-  sanity check that `shard-common/netjoin` issues
-  `MCAST_JOIN_SOURCE_GROUP` (and the matching leave) on lo. Also
-  exercises `shard.Prefix(SSM, site)` → `FF35`. Does not require
-  Docker.
-- **Scenario 61** — `TestScenario61_SSMASMFallback`: starts a proxy +
-  listener with `SOURCE_MODE=asm` to verify the SSM scaffolding is
-  no-op when disabled (the new env vars must be accepted without
-  changing ASM behavior).
-
-Full Posture C cross-container delivery requires PIM-SSM in the
-inter-container fabric, which Docker's default bridge does not
-provide; that is validated on real fabric hosts (no vm-lab variants).
-
-```bash
-# Run both SSM scenarios
-make test-ssm
-
-# Just the loopback test — fast, no Docker required
-go test ./harness/scenarios/ -v -run TestScenario60_SSMLoopback
-```
-
-### Unified logging
-
-- **Scenario 73** — `TestScenario73_UnifiedLoggingContract`: builds and runs the
-  real `shard-manifest` binary with `LOG_FORMAT=json` and asserts the
-  [unified logging](https://github.com/lightwebinc/shard-common/blob/main/docs/logging.md)
-  emit contract — one JSON object per line, the `service.{name,instance.id,version}`
-  identity triple on every line, and a single `host.inventory` event nesting
-  os/cpu/mem/net/build with both IPv4 and IPv6 address keys per interface. No
-  Docker fabric required.
-
-```bash
-go test ./harness/scenarios/ -v -run TestScenario73_UnifiedLoggingContract
-```
-
-### BRC-142 coalescing (bundle frame)
-
-Two scenarios validate the [BRC-142 coalescing frame](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-142-coalescing-frame.md)
-(pps-reduction bundle format, `FrameVer 0x08`):
-
-- **Scenario 90** — `TestScenario90_CoalesceDelivery`: enables `-coalesce` on
-  the proxy over a shard-dense flow and proves the proxy packs many small
-  transactions into bundle datagrams (`bsp_coalesce_*`) while the listener
-  edge-decoalesces every member back out (100% delivery — coalescing conserves
-  transactions).
-- **Scenario 91** — `TestScenario91_CoalesceLossRecovery`: induces multicast
-  loss and proves bundle-unit recovery — the listener gap-tracks the bundle
-  `SeqNum` stream and NACKs, the retry endpoint serves the cached bundle whole
-  and retransmits it, and the re-decoalesced bundle closes the gap.
-
-Coalescing happens at the origin proxy, not at the spine; billing meters the
-receiver's wire-pps so the saving reaches the consumer's bill.
-
-```bash
-# Run both coalescing scenarios
-make test-coalesce
-```
+- **60/61 — SSM (RFC 4607)** (`make test-ssm`): `netjoin` source-group
+  join/leave sanity plus ASM-fallback startup; see the
+  [SSM Support Plan](https://github.com/lightwebinc/bsv-multicast/blob/main/DESIGN.md#source-specific-multicast-ssm).
+- **70–73 — BRC-139 manifest + unified logging** (`make test-manifest`):
+  wire pipeline, live-reshard signal, adoption safety gates, and the
+  `shard-manifest` [unified logging](https://github.com/lightwebinc/shard-common/blob/main/docs/logging.md)
+  emit contract.
+- **90/91 — BRC-142 coalescing** (`make test-coalesce`): origin-proxy bundle
+  packing, listener edge-decoalescing, and bundle-unit NACK recovery; see the
+  [BRC-142 spec](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-142-coalescing-frame.md).
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
 | `Makefile` | `make test` targets for the Go Docker harness |
+| `SCENARIOS.md` | Canonical scenario index (per-scenario descriptions) |
 | `harness/scenarios/` | Go test files — one per scenario |
 | `harness/build/` | Docker image builder (compiles binaries, creates minimal images) |
 | `harness/driver/` | Docker driver (container lifecycle, network) |

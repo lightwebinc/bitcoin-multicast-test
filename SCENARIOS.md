@@ -24,7 +24,7 @@ make test-one T=ScenarioNN
 | 01  | Functional all-shards                        | `TestScenario01_FunctionalAllShards`         | [harness](harness/scenarios/scenario01_test.go)         |
 | 02  | Functional shard filter                      | `TestScenario02_FunctionalShardFilter`       | [harness](harness/scenarios/scenario02_test.go)       |
 | 03  | Functional subtree filter                    | `TestScenario03_FunctionalSubtreeFilter`     | [harness](harness/scenarios/scenario03_test.go)     |
-| 04  | Extended dashboard (24h soak)                | `TestScenario04_ExtendedDashboard`           | [harness](harness/scenarios/scenario04_test.go)            |
+| 04  | Extended dashboard (24h soak, skipped)       | `TestScenario04_ExtendedDashboard`           | [harness](harness/scenarios/scenario04_test.go)            |
 | 05  | Multicast egress bridge (group re-mapping)   | `TestScenario05_McEgressBridge`              | [harness](harness/scenarios/scenario05_test.go)              |
 | 06  | Functional BRC-128 (Extended Format payload) | `TestScenario06_FunctionalBRC128`            | [harness](harness/scenarios/scenario06_test.go)             |
 | 07  | Functional BRC-128 + BRC-124 coexistence     | `TestScenario07_FunctionalBRC128Mixed`       | [harness](harness/scenarios/scenario07_test.go)       |
@@ -50,7 +50,7 @@ make test-one T=ScenarioNN
 | #   | Title                                             | Test                                  | Files                                                                                                  |
 | --- | ------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | 20  | BRC-127 subtree group announce: dynamic filtering | `TestScenario20_SubtreeGroupAnnounce` | [harness](harness/scenarios/scenario20_test.go) |
-| 21  | Subtree group ramp (24.5h ramp test)              | `TestScenario21_SubtreeGroupRamp`     | [harness](harness/scenarios/scenario21_test.go)     |
+| 21  | Subtree group ramp (24.5h ramp, skipped)          | `TestScenario21_SubtreeGroupRamp`     | [harness](harness/scenarios/scenario21_test.go)     |
 
 ## 22–26 — Fragmentation (BRC-130)
 
@@ -81,11 +81,15 @@ make test-one T=ScenarioNN
 
 `make test-bgp`
 
-| #   | Title                                            | Test                                  | Files                                                                                                   |
-| --- | ------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 40  | BGP ingress announce: AnyCast prefix propagation | `TestScenario40_BGPIngressAnnounce`   | [harness](harness/scenarios/scenario40_test.go)    |
-| 41  | BGP ingress failover (stub)                      | `TestScenario41_BGPIngressFailover`   | [harness](harness/scenarios/scenario41_test.go)    |
-| 42  | BGP multi-proxy anycast: ECMP + failover         | `TestScenario42_BGPMultiProxyAnycast` | [harness](harness/scenarios/scenario42_test.go) |
+All three BGP scenarios currently skip: 40 and 42 are deferred pending FRR +
+BIRD2 sidecar containers and a multi-network topology, and 41 is a stub —
+`make test-bgp` runs no real tests yet.
+
+| #   | Title                                                       | Test                                  | Files                                                                                                   |
+| --- | ----------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 40  | BGP ingress announce: AnyCast prefix propagation (deferred) | `TestScenario40_BGPIngressAnnounce`   | [harness](harness/scenarios/scenario40_test.go)    |
+| 41  | BGP ingress failover (stub)                                 | `TestScenario41_BGPIngressFailover`   | [harness](harness/scenarios/scenario41_test.go)    |
+| 42  | BGP multi-proxy anycast: ECMP + failover (deferred)         | `TestScenario42_BGPMultiProxyAnycast` | [harness](harness/scenarios/scenario42_test.go) |
 
 ## 50–53 — TxID dedup
 
@@ -190,7 +194,7 @@ whole and retransmits it, and the re-decoalesced bundle closes the gap.
 | `make test-quick`            | `Scenario0[1-3]\|Scenario0[67]` | tier-1 filter scenarios (~60s) |
 | `make test-retransmit`       | `Scenario(99\|1[0-6])`          | NACK / retransmit              |
 | `make test-frag`             | `Scenario2[2-6]`                | fragmentation                  |
-| `make test-bgp`              | `Scenario4[02]`                 | BGP                            |
+| `make test-bgp`              | `Scenario4[02]`                 | BGP (all currently skip)       |
 | `make test-ssm`              | `Scenario6[01]`                 | SSM (RFC 4607)                 |
 | `make test-manifest`         | `Scenario7[0-2]`                | BRC-139 / auto-shard-config    |
 | `make test-coalesce`         | `Scenario9[01]`                 | BRC-142 coalescing / bundle    |

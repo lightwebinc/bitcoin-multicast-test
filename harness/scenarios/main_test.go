@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	// 2. Pull external images used by some scenarios (Redis, FRR).
+	// 2. Pull external images used by some scenarios (Redis).
 	for _, img := range []string{"redis:7-alpine"} {
 		if err := dockerPull(ctx, img); err != nil {
 			fmt.Fprintf(os.Stderr, "pull %s failed: %v\n", img, err)

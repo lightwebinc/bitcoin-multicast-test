@@ -8,7 +8,7 @@ import (
 
 // Scenario 03 — Functional subtree filter
 //
-// Mirrors scenarios/03-functional-subtree-filter/run.sh.
+// Ported from the retired bash scenario 03.
 //
 // Same topology as scenario 01. Focuses on listener3 which has
 // SUBTREE_INCLUDE set to one of 8 subtrees. Asserts that:

@@ -11,7 +11,7 @@ import (
 
 // Scenario 37 — BRC-134 anchor frame: NACK retransmission
 //
-// Mirrors scenarios/37-anchor-retransmit/run.sh.
+// Ported from the retired bash scenario 37.
 //
 // 10% loss on listeners + anchor frames. Retry endpoint caches V6 frames
 // and retransmits to GroupBlockBroadcast on NACK.

@@ -8,7 +8,7 @@ import (
 
 // Scenario 26 — BRC-130 fragmentation: high-throughput delivery ratio
 //
-// Mirrors scenarios/26-fragmentation-throughput/run.sh.
+// Ported from the retired bash scenario 26.
 //
 // FRAG_MTU=1500, 4096-byte payload (4 fragments), PPS=500 for 10s.
 // Under no-loss conditions, ≥95% of reassemblies should complete.

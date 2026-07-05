@@ -11,7 +11,7 @@ import (
 
 // Scenario 99 — NACK retransmit end-to-end
 //
-// Mirrors scenarios/99-nack-retransmit/run.sh.
+// Ported from the retired bash scenario 99.
 //
 // Topology: proxy + 3 listeners + 1 retry endpoint + subtx-gen.
 // 1% netem loss on listeners creates gaps. Generator injects sequence gaps

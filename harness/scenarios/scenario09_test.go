@@ -13,7 +13,7 @@ import (
 
 // Scenario 09 — Listener payload hash verification
 //
-// Mirrors scenarios/09-listener-payload-verification/run.sh.
+// Ported from the retired bash scenario 09.
 //
 // listener1 has VERIFY_PAYLOAD_HASH=true. The generator runs with
 // -corrupt-txid-rate 50 so ~50% of frames have corrupted TxIDs.

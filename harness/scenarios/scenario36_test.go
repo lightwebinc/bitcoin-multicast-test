@@ -10,7 +10,7 @@ import (
 
 // Scenario 36 — BRC-134 anchor frame: basic delivery
 //
-// Mirrors scenarios/36-anchor-delivery/run.sh.
+// Ported from the retired bash scenario 36.
 //
 // Sends anchor frames via TCP. All listeners must receive and forward them
 // on GroupBlockBroadcast (FF0E::B:FFFE).

@@ -14,7 +14,7 @@ import (
 
 // Scenario 52 — TxID dedup: Redis failure (fail-open)
 //
-// Mirrors scenarios/52-txid-dedup-redis-failure/run.sh.
+// Ported from the retired bash scenario 52.
 //
 // Starts Redis, sends some traffic, stops Redis mid-test, sends more traffic.
 // Listeners should fail-open (continue forwarding despite Redis down).

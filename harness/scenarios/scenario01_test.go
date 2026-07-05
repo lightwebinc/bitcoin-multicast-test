@@ -13,7 +13,7 @@ import (
 
 // Scenario 01 — Functional all-shards
 //
-// Mirrors scenarios/01-functional-all-shards/run.sh.
+// Ported from the retired bash scenario 01.
 //
 // Topology (5 containers on mcast-fabric fd10::/64):
 //

@@ -10,7 +10,7 @@ import (
 
 // Scenario 32 — BRC-132 subtree data: basic delivery
 //
-// Mirrors scenarios/32-subtree-data-delivery/run.sh.
+// Ported from the retired bash scenario 32.
 //
 // Sends inline BRC-132 SubtreeData frames via TCP. All listeners with
 // SUBTREE_DATA_ENABLED=true must receive and forward every frame.

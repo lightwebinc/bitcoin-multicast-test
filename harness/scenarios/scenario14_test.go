@@ -11,7 +11,7 @@ import (
 
 // Scenario 14 — Multi-endpoint rate limit defense
 //
-// Mirrors scenarios/14-multi-endpoint-ratelimit/run.sh.
+// Ported from the retired bash scenario 14.
 //
 // Topology: proxy + 3 listeners + 3 retry endpoints with tight per-IP rate
 // limits. Gap injection drives legitimate NACKs through the escalation chain.

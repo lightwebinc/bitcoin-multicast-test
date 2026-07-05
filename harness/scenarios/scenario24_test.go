@@ -13,7 +13,7 @@ import (
 
 // Scenario 24 — BRC-130 fragmentation: payload hash verification
 //
-// Mirrors scenarios/24-fragmentation-hash-verify/run.sh.
+// Ported from the retired bash scenario 24.
 //
 // Proxy with FRAG_MTU=1500. listener1 has VERIFY_PAYLOAD_HASH=true.
 // Honest payloads → 0 hash mismatches, forwarded ≈ completed.

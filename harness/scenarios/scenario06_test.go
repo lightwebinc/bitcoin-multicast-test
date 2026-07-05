@@ -8,7 +8,7 @@ import (
 
 // Scenario 06 — Functional BRC-128 (Extended Format payload)
 //
-// Mirrors scenarios/06-functional-brc128/run.sh.
+// Ported from the retired bash scenario 06.
 //
 // Same topology as scenario 01 but generator emits BRC-128 (EF) payloads via
 // -payload-format brc128. Infrastructure is payload-agnostic, so all filter

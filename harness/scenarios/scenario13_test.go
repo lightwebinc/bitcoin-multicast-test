@@ -11,7 +11,7 @@ import (
 
 // Scenario 13 — MISS escalation by tier
 //
-// Mirrors scenarios/13-miss-escalation-tier/run.sh.
+// Ported from the retired bash scenario 13.
 //
 // Topology: proxy + 3 listeners + 3 retry endpoints (T0/P128, T0/P64, T1/P128).
 // Block multicast ingress on retry1+retry2 so their caches are empty.

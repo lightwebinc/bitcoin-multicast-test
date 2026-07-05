@@ -8,7 +8,7 @@ import (
 
 // Scenario 02 — Functional shard filter
 //
-// Mirrors scenarios/02-functional-shard-filter/run.sh.
+// Ported from the retired bash scenario 02.
 //
 // Same topology as scenario 01. Asserts that MLD snooping + SHARD_INCLUDE=0,1
 // causes listener2 to receive fewer frames than listener1 (shard filter active),

@@ -11,7 +11,7 @@ import (
 
 // Scenario 25 — BRC-130 fragmentation: fragment loss / reassembly abandonment
 //
-// Mirrors scenarios/25-fragmentation-loss/run.sh.
+// Ported from the retired bash scenario 25.
 //
 // FRAG_MTU=1500, 2048-byte payload (2 fragments). 60% netem loss on listeners.
 // With 60% drop rate, P(both arrive) = (0.4)^2 = 16%. Expect most reassemblies

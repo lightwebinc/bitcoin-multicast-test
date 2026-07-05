@@ -11,7 +11,7 @@ import (
 
 // Scenario 34 — BRC-132 subtree data: NACK retransmission
 //
-// Mirrors scenarios/34-subtree-data-retransmit/run.sh.
+// Ported from the retired bash scenario 34.
 //
 // 10% loss on listeners + BRC-132 frames. Retry endpoint caches them.
 // Listeners detect gaps and NACK → retransmit fills them.

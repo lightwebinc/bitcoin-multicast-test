@@ -8,7 +8,7 @@ import (
 
 // Scenario 07 — Functional BRC-128 + BRC-124 coexistence
 //
-// Mirrors scenarios/07-functional-brc128-mixed/run.sh.
+// Ported from the retired bash scenario 07.
 //
 // Generator alternates BRC-124 (raw) and BRC-128 (EF) payloads via
 // -payload-format mixed. Infrastructure is payload-opaque, so filter

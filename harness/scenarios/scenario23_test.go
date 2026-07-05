@@ -8,7 +8,7 @@ import (
 
 // Scenario 23 — BRC-130 fragmentation: shard filter
 //
-// Mirrors scenarios/23-fragmentation-shard-filter/run.sh.
+// Ported from the retired bash scenario 23.
 //
 // Same as 22, but verifies that shard and subtree filters work correctly
 // on fragmented frames after reassembly.

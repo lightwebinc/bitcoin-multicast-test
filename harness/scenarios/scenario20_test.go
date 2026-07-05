@@ -13,7 +13,7 @@ import (
 
 // Scenario 20 — BRC-127 subtree group announce: dynamic filtering
 //
-// Mirrors scenarios/20-subtree-group-announce/run.sh.
+// Ported from the retired bash scenario 20.
 //
 // source → TCP SubtreeGroupAnnounce → proxy → ff05::b:fffc → listener3 registry.
 // listener3 has SUBTREE_GROUPS configured and no SUBTREE_INCLUDE, relying on

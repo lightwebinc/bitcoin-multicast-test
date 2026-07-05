@@ -11,7 +11,7 @@ import (
 
 // Scenario 16 — Per-group retransmit rate limit (ACK preserved)
 //
-// Mirrors scenarios/16-group-ratelimit/run.sh.
+// Ported from the retired bash scenario 16.
 //
 // Tight RL_GROUP_RATE on retry1, high IP/chain/seq limits so only the group
 // tier fires. Verifies:

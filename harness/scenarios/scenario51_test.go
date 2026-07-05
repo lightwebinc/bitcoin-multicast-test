@@ -13,7 +13,7 @@ import (
 
 // Scenario 51 — TxID dedup: collision (single listener, no dedup expected)
 //
-// Mirrors scenarios/51-txid-dedup-collision/run.sh.
+// Ported from the retired bash scenario 51.
 //
 // Single listener with dedup enabled. Since only one listener is writing,
 // tx_deduped should be 0 (no collisions from other listeners).

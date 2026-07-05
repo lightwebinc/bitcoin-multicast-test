@@ -11,7 +11,7 @@ import (
 
 // Scenario 11 — Permanent gap / MISS (cache-empty)
 //
-// Mirrors scenarios/11-permanent-gap-miss/run.sh.
+// Ported from the retired bash scenario 11.
 //
 // Blocks multicast ingress on the retry endpoint so its cache is empty.
 // 2% netem loss on listeners creates gaps; every NACK → MISS; gaps evict

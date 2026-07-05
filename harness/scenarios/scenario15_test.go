@@ -11,7 +11,7 @@ import (
 
 // Scenario 15 — Per-chain NACK rate limit
 //
-// Mirrors scenarios/15-chain-ratelimit/run.sh.
+// Ported from the retired bash scenario 15.
 //
 // Tight RL_CHAIN_RATE on retry1, high IP RL so only the chain tier fires.
 // Gap injection creates real NACKs with non-zero ChainIDs.

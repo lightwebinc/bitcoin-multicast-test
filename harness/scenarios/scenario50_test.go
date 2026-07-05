@@ -14,7 +14,7 @@ import (
 
 // Scenario 50 — TxID dedup basic: cross-listener deduplication
 //
-// Mirrors scenarios/50-txid-dedup-basic/run.sh.
+// Ported from the retired bash scenario 50.
 //
 // All 3 listeners share a Redis. Each TxID forwarded once total
 // (first-writer wins). sum(forwarded) ≈ received_l1.

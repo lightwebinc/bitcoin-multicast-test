@@ -11,7 +11,7 @@ import (
 
 // Scenario 10 — Single endpoint ACK (tightened)
 //
-// Mirrors scenarios/10-single-endpoint-ack/run.sh.
+// Ported from the retired bash scenario 10.
 //
 // Low PPS with infrequent gaps so every dispatched NACK should produce an ACK.
 // Assertions are tighter than scenario 99: gaps_unrecovered must be 0.

@@ -14,7 +14,7 @@ import (
 
 // Scenario 53 — TxID dedup: sentinel failover
 //
-// Mirrors scenarios/53-txid-dedup-failover/run.sh.
+// Ported from the retired bash scenario 53.
 //
 // Two Redis containers (primary + replica). Kill primary, verify listeners
 // reconnect to replica and continue dedup.

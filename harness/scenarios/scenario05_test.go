@@ -13,7 +13,7 @@ import (
 
 // Scenario 05 — Multicast egress bridge (group re-mapping)
 //
-// Mirrors scenarios/05-mc-egress-bridge/run.sh.
+// Ported from the retired bash scenario 05.
 //
 // listener1 re-emits frames from site-local to link-local.
 // listener4 subscribes to link-local and must receive frames.

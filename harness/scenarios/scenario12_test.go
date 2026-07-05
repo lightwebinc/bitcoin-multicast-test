@@ -11,7 +11,7 @@ import (
 
 // Scenario 12 — Burst gap + rate limiting
 //
-// Mirrors scenarios/12-burst-gap-ratelimit/run.sh.
+// Ported from the retired bash scenario 12.
 //
 // Frequent multi-frame gaps create a NACK flood. Verifies that the retry
 // endpoint's rate limiter activates AND some retransmits still succeed.

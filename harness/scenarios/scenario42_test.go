@@ -4,7 +4,7 @@ import "testing"
 
 // Scenario 42 — BGP multi-proxy anycast: ECMP + failover
 //
-// Mirrors scenarios/42-bgp-multi-proxy-anycast/run.sh.
+// Ported from the retired bash scenario 42.
 //
 // Requires FRR routers + BIRD2 sidecars + 2 proxy instances. Complex multi-
 // network topology. Implementation deferred.

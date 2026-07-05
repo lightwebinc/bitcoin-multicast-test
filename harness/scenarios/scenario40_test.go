@@ -4,7 +4,7 @@ import "testing"
 
 // Scenario 40 — BGP ingress announce: AnyCast prefix propagation
 //
-// Mirrors scenarios/40-bgp-ingress-announce/run.sh.
+// Ported from the retired bash scenario 40.
 //
 // Requires FRR routers + BIRD2 sidecars. Complex network topology with
 // additional Docker networks (bgp-transit, bgp-ibgp). Implementation deferred.

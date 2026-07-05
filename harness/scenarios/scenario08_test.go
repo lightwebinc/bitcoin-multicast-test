@@ -11,7 +11,7 @@ import (
 
 // Scenario 08 — NACK retransmit with BRC-128 (Extended Format) payloads
 //
-// Mirrors scenarios/08-nack-retransmit-brc128/run.sh.
+// Ported from the retired bash scenario 08.
 //
 // Same topology as scenario 99 but with BRC-128 payloads. Verifies that the
 // retry cache and NACK pipeline are payload-agnostic.

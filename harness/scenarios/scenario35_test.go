@@ -13,7 +13,7 @@ import (
 
 // Scenario 35 — Block header egress: stripped BRC-131 retransmission
 //
-// Mirrors scenarios/35-block-header-egress/run.sh.
+// Ported from the retired bash scenario 35.
 //
 // listener1 has HEADER_EGRESS_ENABLED=true. Sends block announcements via TCP.
 // Asserts bsl_header_forwarded_total > 0 and errors == 0.

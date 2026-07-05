@@ -10,7 +10,7 @@ import (
 
 // Scenario 30 — BRC-131 block announcement: basic delivery
 //
-// Mirrors scenarios/30-block-announce-delivery/run.sh.
+// Ported from the retired bash scenario 30.
 //
 // Sends block announcements via TCP to the proxy. All 3 listeners subscribe to
 // GroupBlockBroadcast and must receive every frame regardless of shard/subtree filters.

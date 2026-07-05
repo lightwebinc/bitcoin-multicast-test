@@ -8,7 +8,7 @@ import (
 
 // Scenario 22 — BRC-130 fragmentation: basic delivery
 //
-// Mirrors scenarios/22-fragmentation-delivery/run.sh.
+// Ported from the retired bash scenario 22.
 //
 // Proxy configured with FRAG_MTU=1500. Generator sends 2048-byte payloads
 // (2 fragments per frame). Asserts reassembly completes with 0 abandoned.

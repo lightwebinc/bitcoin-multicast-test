@@ -1,10 +1,11 @@
 // Package build provides helpers to cross-compile component binaries on the
 // host and package them into minimal Docker images for the test harness.
 //
-// All component repos share a private dependency on
-// github.com/lightwebinc/shard-common. Because the module is not
-// publicly available on the Go module proxy, the standard "go mod download"
-// inside a docker build would fail. Instead, this package:
+// All component repos depend on github.com/lightwebinc/shard-common. The
+// harness builds sibling checkouts at HEAD, which may rely on shard-common
+// changes that are not yet tagged on the Go module proxy. So instead of
+// resolving the tagged module inside a docker build, this package (when no
+// parent go.work workspace is found):
 //
 //  1. Injects a temporary "replace" directive pointing to the local checkout.
 //  2. Cross-compiles a static Linux/amd64 binary on the host.
@@ -137,7 +138,7 @@ func Build(ctx context.Context, s ImageSpec, force bool) error {
 }
 
 // DefaultSpecs returns the standard set of ImageSpecs assuming all repos live
-// under repoRoot (e.g. /home/light/repo).
+// under repoRoot (e.g. ~/src or /path/to/repos).
 func DefaultSpecs(repoRoot string) []ImageSpec {
 	return []ImageSpec{
 		{
