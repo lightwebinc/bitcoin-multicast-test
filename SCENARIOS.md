@@ -228,17 +228,25 @@ per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
 | `make test-beef`             | `Scenario9[2-8]`                | BRC-148 BEEF object plane      |
 | `make test-one T=ScenarioNN` | single                          | run one scenario               |
 
-## Known-red scenarios (pre-existing, verified 2026-07-24)
+## Formerly-red scenarios (resolved 2026-07-24)
 
 The 2026-07-24 BRC-148 work rebuilt the long-stale harness images (cached
-from before 2026-07-07), exposing failures that predate that work — each
-reproduced identically with a listener built from the pre-BRC-148 commit:
+from before 2026-07-07), exposing three pre-existing failures — since fixed:
 
-- **05 (mc-egress bridge)** — the bridge-side listener receives nothing.
-- **74 (cross-domain NACK proxy)** and **91 (bundle loss recovery)** — the
-  consumer listener detects ZERO SeqNum gaps under netem loss (shared
-  signature; suspect: the v1.7.x emitter-change re-baseline heuristic at low
-  frame rates). Gap detection is proven working at higher rates (08, 96, 99).
+- **05 (mc-egress bridge)** and the bridge half of **74 (cross-domain NACK
+  proxy)** — mc-egress re-emitted payload-only frames because it honoured the
+  `-strip-header` flag (default on). A bridged frame crosses into a domain of
+  *listeners* that must decode the BRC-124 header to demux, gap-track, and
+  NACK; the stripped payload was undecodable (`decode_error`), so the
+  downstream listener received nothing / saw zero SeqNums. `MCastSender` now
+  always forwards the complete frame; strip-header applies only to the final
+  unicast hop to a raw-tx consumer.
+- **91 (bundle loss recovery)** — the scenario ran the listeners at the default
+  ShardBits while the proxy was pinned to 1, so each received bundle was
+  re-bucketed and re-stamped from a *local* SeqNum counter that never
+  incremented for an upstream-dropped bundle (loss invisible → zero gaps). The
+  listeners now match the proxy's ShardBits, exercising the real bundle-unit
+  recovery path (the retry caches and serves the proxy-stamped bundle).
 
-These need their own investigation; they are not BRC-148 defects. (Scenario 34, previously skipped, now passes with fragment-level gap tracking.)
+(Scenario 34, previously skipped, now passes with fragment-level gap tracking.)
 

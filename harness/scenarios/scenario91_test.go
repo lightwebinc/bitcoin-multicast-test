@@ -29,6 +29,19 @@ func TestScenario91_CoalesceLossRecovery(t *testing.T) {
 		"COALESCE_MAX_BYTES": "1400",
 	})
 
+	// The listeners MUST run at the proxy's ShardBits. The retry caches each
+	// bundle opaquely under the proxy-stamped (HashKey, SeqNum); recovery works
+	// only if the listener gap-tracks and NACKs that SAME flow identity. A
+	// ShardBits mismatch would send the listener through the re-bucketer, which
+	// re-splits each RECEIVED bundle and re-stamps children from a fresh LOCAL
+	// SeqNum counter — so an upstream-dropped bundle never increments it and the
+	// loss becomes invisible (contiguous local stream → zero gaps), and the
+	// re-stamped HashKey no longer matches the retry's cache. Match the proxy so
+	// this exercises the real bundle-unit recovery path, not re-bucketing.
+	for _, l := range []string{"s91-listener1", "s91-listener2", "s91-listener3"} {
+		e.PatchEnv(l, map[string]string{"SHARD_BITS": "1"})
+	}
+
 	e.StartAll(ctx)
 	e.Sleep(4*time.Second, "MLD querier settle + multicast group joins")
 
