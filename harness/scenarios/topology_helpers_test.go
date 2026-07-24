@@ -130,6 +130,8 @@ var specialBinaries = map[string]string{
 	"send-block-announce": "send-block-announce:harness",
 	"send-subtree-data":   "send-subtree-data:harness",
 	"send-anchor-frame":   "send-anchor-frame:harness",
+	"send-subtree-push":   "send-subtree-push:harness",
+	"send-block-push":     "send-block-push:harness",
 	"beef-gen":            "beef-gen:harness",
 }
 

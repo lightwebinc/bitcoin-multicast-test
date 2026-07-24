@@ -18,7 +18,7 @@ import (
 func TestScenario31_BlockAnnounceRetransmit(t *testing.T) {
 	ctx := context.Background()
 	e, _ := retryTopology(t, "s31")
-	e.PatchEnv("s31-proxy", map[string]string{"TCP_LISTEN_PORT": "9002"})
+	e.PatchEnv("s31-proxy", map[string]string{"BLOCK_LISTEN_PORT": "8727"})
 	e.StartAll(ctx)
 	e.Sleep(4*time.Second, "MLD querier settle")
 
@@ -34,11 +34,10 @@ func TestScenario31_BlockAnnounceRetransmit(t *testing.T) {
 	beforeR := e.Snapshot(ctx, "s31-retry1")
 
 	genCmd := []string{
-		"send-block-announce",
-		"-addr", "[fd10::2]:9002",
-		"-blocks", "50",
+		"send-block-push",
+		"-addr", "[fd10::2]:8727",
+		"-count", "50",
 		"-subtrees", "4",
-		"-coinbase=true",
 		"-interval", "50ms",
 	}
 	startGenerator(t, ctx, "s31", genCmd)

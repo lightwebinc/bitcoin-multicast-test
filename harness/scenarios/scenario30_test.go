@@ -17,24 +17,25 @@ import (
 func TestScenario30_BlockAnnounceDelivery(t *testing.T) {
 	ctx := context.Background()
 	e, _, _, _ := basicTopology(t, "s30")
-	e.PatchEnv("s30-proxy", map[string]string{"TCP_LISTEN_PORT": "9002"})
+	e.PatchEnv("s30-proxy", map[string]string{"BLOCK_LISTEN_PORT": "8727"})
 	e.StartAll(ctx)
 	e.Sleep(4*time.Second, "MLD querier settle")
 
 	blockCount := 20
-	expectedFrames := float64(blockCount * 2) // BlockAnnounce + CoinbaseTx per block
+	// One fabric block frame per block: the push lane carries the BRC-144
+	// body verbatim (coinbase inline), no separate coinbase frame.
+	expectedFrames := float64(blockCount)
 
 	e.Sleep(3*time.Second, "drain residual frames")
 
 	beforeL := snapshotListeners(t, e, ctx, "s30")
 
-	// Run send-block-announce.
+	// Submit BRC-144 block push objects up the tunnel-side lane (8727).
 	genCmd := []string{
-		"send-block-announce",
-		"-addr", "[fd10::2]:9002",
-		"-blocks", "20",
+		"send-block-push",
+		"-addr", "[fd10::2]:8727",
+		"-count", "20",
 		"-subtrees", "4",
-		"-coinbase=true",
 		"-interval", "50ms",
 	}
 	startGenerator(t, ctx, "s30", genCmd)

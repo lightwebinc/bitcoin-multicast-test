@@ -190,6 +190,18 @@ func DefaultSpecs(repoRoot string) []ImageSpec {
 			Tag:     "send-anchor-frame:harness",
 		},
 		{
+			RepoDir: filepath.Join(repoRoot, "subtx-generator"),
+			MainPkg: "./cmd/send-subtree-push",
+			Binary:  "send-subtree-push",
+			Tag:     "send-subtree-push:harness",
+		},
+		{
+			RepoDir: filepath.Join(repoRoot, "subtx-generator"),
+			MainPkg: "./cmd/send-block-push",
+			Binary:  "send-block-push",
+			Tag:     "send-block-push:harness",
+		},
+		{
 			RepoDir: filepath.Join(repoRoot, "beef-generator"),
 			MainPkg: "./cmd/beef-gen",
 			Binary:  "beef-gen",

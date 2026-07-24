@@ -17,7 +17,7 @@ import (
 func TestScenario32_SubtreeDataDelivery(t *testing.T) {
 	ctx := context.Background()
 	e, _, _, _ := basicTopology(t, "s32")
-	e.PatchEnv("s32-proxy", map[string]string{"TCP_LISTEN_PORT": "9002"})
+	e.PatchEnv("s32-proxy", map[string]string{"SUBTREE_LISTEN_PORT": "8726"})
 	for _, l := range []string{"s32-listener1", "s32-listener2", "s32-listener3"} {
 		e.PatchEnv(l, map[string]string{"SUBTREE_DATA_ENABLED": "true"})
 	}
@@ -31,11 +31,10 @@ func TestScenario32_SubtreeDataDelivery(t *testing.T) {
 	beforeL := snapshotListeners(t, e, ctx, "s32")
 
 	genCmd := []string{
-		"send-subtree-data",
-		"-addr", "[fd10::2]:9002",
-		"-frames", "30",
+		"send-subtree-push",
+		"-addr", "[fd10::2]:8726",
+		"-count", "30",
 		"-nodes", "8",
-		"-msg-type", "hashes",
 		"-interval", "50ms",
 	}
 	startGenerator(t, ctx, "s32", genCmd)

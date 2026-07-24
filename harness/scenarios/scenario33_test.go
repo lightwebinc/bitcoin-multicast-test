@@ -18,7 +18,7 @@ func TestScenario33_SubtreeDataFragmentation(t *testing.T) {
 	ctx := context.Background()
 	e, _, _, _ := basicTopology(t, "s33")
 	e.PatchEnv("s33-proxy", map[string]string{
-		"TCP_LISTEN_PORT": "9002",
+		"SUBTREE_LISTEN_PORT": "8726",
 		"FRAG_MTU":        "1500",
 	})
 	for _, l := range []string{"s33-listener1", "s33-listener2", "s33-listener3"} {
@@ -32,11 +32,10 @@ func TestScenario33_SubtreeDataFragmentation(t *testing.T) {
 	beforeL1 := snapshotListeners(t, e, ctx, "s33")
 
 	genCmd := []string{
-		"send-subtree-data",
-		"-addr", "[fd10::2]:9002",
-		"-frames", "20",
+		"send-subtree-push",
+		"-addr", "[fd10::2]:8726",
+		"-count", "20",
 		"-nodes", "256",
-		"-msg-type", "hashes",
 		"-interval", "100ms",
 	}
 	startGenerator(t, ctx, "s33", genCmd)

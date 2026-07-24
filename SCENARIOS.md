@@ -72,7 +72,7 @@ make test-one T=ScenarioNN
 | 31  | BRC-131 block announcement: NACK retransmission      | `TestScenario31_BlockAnnounceRetransmit`  | [harness](harness/scenarios/scenario31_test.go)  |
 | 32  | BRC-132 subtree data: basic delivery                 | `TestScenario32_SubtreeDataDelivery`      | [harness](harness/scenarios/scenario32_test.go)      |
 | 33  | BRC-132 subtree data: fragmentation                  | `TestScenario33_SubtreeDataFragmentation` | [harness](harness/scenarios/scenario33_test.go) |
-| 34  | BRC-132 subtree data: NACK retransmission            | `TestScenario34_SubtreeDataRetransmit`    | [harness](harness/scenarios/scenario34_test.go)    |
+| 34  | BRC-132 subtree data: NACK retransmission (skipped — pending fragment-level gap tracking) | `TestScenario34_SubtreeDataRetransmit`    | [harness](harness/scenarios/scenario34_test.go)    |
 | 35  | Block header egress: stripped BRC-131 retransmission | `TestScenario35_BlockHeaderEgress`        | [harness](harness/scenarios/scenario35_test.go)        |
 | 36  | BRC-134 anchor frame: basic delivery                 | `TestScenario36_AnchorDelivery`           | [harness](harness/scenarios/scenario36_test.go)            |
 | 37  | BRC-134 anchor frame: NACK retransmission            | `TestScenario37_AnchorRetransmit`         | [harness](harness/scenarios/scenario37_test.go)          |
