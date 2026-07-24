@@ -22,7 +22,7 @@ func TestScenario35_BlockHeaderEgress(t *testing.T) {
 	e := env.New(t, dockerdriver.New())
 
 	penv := proxyEnv()
-	penv["TCP_LISTEN_PORT"] = "9002"
+	penv["BLOCK_LISTEN_PORT"] = "8727"
 	e.AddNode(driver.NodeConfig{
 		Name:        "s35-proxy",
 		Image:       "shard-proxy:harness",
@@ -52,11 +52,10 @@ func TestScenario35_BlockHeaderEgress(t *testing.T) {
 
 	blockCount := 20
 	genCmd := []string{
-		"send-block-announce",
-		"-addr", "[fd10::2]:9002",
-		"-blocks", "20",
+		"send-block-push",
+		"-addr", "[fd10::2]:8727",
+		"-count", "20",
 		"-subtrees", "4",
-		"-coinbase=true",
 		"-interval", "50ms",
 	}
 	startGenerator(t, ctx, "s35", genCmd)
@@ -73,7 +72,8 @@ func TestScenario35_BlockHeaderEgress(t *testing.T) {
 
 	t.Logf("listener1: header_forwarded=%.0f header_errors=%.0f", headerFwd, headerErr)
 
-	// Only BlockAnnounce (not CoinbaseTx) produces header egress. The egress
+	// Every pushed block yields one fabric block frame (BRC-144 body verbatim,
+	// leading with the 80-byte header) and thus one header egress. The egress
 	// target [::1]:9107 has no listener, so some UDP writes return ECONNREFUSED
 	// via ICMP unreachable; we count those as "attempted" and assert the sum
 	// of successes + errors covers all blocks.

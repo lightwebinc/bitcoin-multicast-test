@@ -73,7 +73,7 @@ make test-one T=ScenarioNN
 | 32  | BRC-132 subtree data: basic delivery                 | `TestScenario32_SubtreeDataDelivery`      | [harness](harness/scenarios/scenario32_test.go)      |
 | 33  | BRC-132 subtree data: fragmentation                  | `TestScenario33_SubtreeDataFragmentation` | [harness](harness/scenarios/scenario33_test.go) |
 | 34  | BRC-132 subtree data: NACK retransmission (skipped — pending fragment-level gap tracking) | `TestScenario34_SubtreeDataRetransmit`    | [harness](harness/scenarios/scenario34_test.go)    |
-| 35  | Block header egress: stripped BRC-131 retransmission | `TestScenario35_BlockHeaderEgress`        | [harness](harness/scenarios/scenario35_test.go)        |
+| 35  | Block header egress (via the 8727 block push lane)   | `TestScenario35_BlockHeaderEgress`        | [harness](harness/scenarios/scenario35_test.go)        |
 | 36  | BRC-134 anchor frame: basic delivery                 | `TestScenario36_AnchorDelivery`           | [harness](harness/scenarios/scenario36_test.go)            |
 | 37  | BRC-134 anchor frame: NACK retransmission            | `TestScenario37_AnchorRetransmit`         | [harness](harness/scenarios/scenario37_test.go)          |
 
@@ -227,3 +227,18 @@ per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
 | `make test-coalesce`         | `Scenario9[01]`                 | BRC-142 coalescing / bundle    |
 | `make test-beef`             | `Scenario9[2-8]`                | BRC-148 BEEF object plane      |
 | `make test-one T=ScenarioNN` | single                          | run one scenario               |
+
+## Known-red scenarios (pre-existing, verified 2026-07-24)
+
+The 2026-07-24 BRC-148 work rebuilt the long-stale harness images (cached
+from before 2026-07-07), exposing failures that predate that work — each
+reproduced identically with a listener built from the pre-BRC-148 commit:
+
+- **05 (mc-egress bridge)** — the bridge-side listener receives nothing.
+- **74 (cross-domain NACK proxy)** and **91 (bundle loss recovery)** — the
+  consumer listener detects ZERO SeqNum gaps under netem loss (shared
+  signature; suspect: the v1.7.x emitter-change re-baseline heuristic at low
+  frame rates). Gap detection is proven working at higher rates (08, 96, 99).
+
+These need their own investigation; they are not BRC-148 defects.
+
