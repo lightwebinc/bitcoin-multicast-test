@@ -64,6 +64,7 @@ make test-frag     # fragmentation scenarios
 make test-bgp      # BGP ingress / anycast scenarios (currently all skip — deferred)
 make test-manifest # BRC-139 manifest / auto-shard-config scenarios
 make test-coalesce # BRC-142 coalescing / bundle-frame scenarios
+make test-beef     # BRC-148 BEEF object plane scenarios
 make help          # show all targets
 ```
 
@@ -85,6 +86,10 @@ test names, make-target filters). Highlights:
   wire pipeline, live-reshard signal, adoption safety gates, and the
   `shard-manifest` [unified logging](https://github.com/lightwebinc/shard-common/blob/main/docs/logging.md)
   emit contract.
+- **92–98 — BRC-148 BEEF object plane** (`make test-beef`): submission-record
+  ingress (open port + dedicated lane), topic/version filtered delivery,
+  fragmentation, NACK recovery, per-domain manifest coordination, and
+  concurrent-plane independence
 - **90/91 — BRC-142 coalescing** (`make test-coalesce`): origin-proxy bundle
   packing, listener edge-decoalescing, and bundle-unit NACK recovery; see the
   [BRC-142 spec](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-142-coalescing-frame.md).

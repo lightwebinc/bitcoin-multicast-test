@@ -180,6 +180,33 @@ multicast loss and proves bundle-unit recovery: the listener gap-tracks the
 bundle SeqNum stream and NACKs, the retry endpoint serves the cached bundle
 whole and retransmits it, and the re-decoalesced bundle closes the gap.
 
+## 92–98 — BRC-148 BEEF object plane
+
+Validates the [BRC-148 shard domain partition + BEEF object plane](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-148-shard-domain-beef-plane.md)
+(`FrameVer 0x09` on the `0x1000` band; topic-sharded, open ingress class):
+submission-record grammar on the open tx port and the optional dedicated
+lane, topic + version (encoding-capability) filtering, multi-topic sibling
+emissions, BRC-130 fragmentation, BRC-126 recovery, and the per-domain
+BRC-139 manifest extension. `make test-beef`.
+
+| #  | Title                                   | Test                                    | Files                                           |
+| -- | --------------------------------------- | --------------------------------------- | ----------------------------------------------- |
+| 92 | Submit → deliver (open port + lane)     | `TestScenario92_BeefSubmitDeliver`      | [harness](harness/scenarios/scenario92_test.go) |
+| 93 | Multi-topic + in-group topic filter     | `TestScenario93_BeefTopicFilter`        | [harness](harness/scenarios/scenario93_test.go) |
+| 94 | Version filter + verbatim carriage      | `TestScenario94_BeefVersionFilterVerbatim` | [harness](harness/scenarios/scenario94_test.go) |
+| 95 | Large-object fragmentation              | `TestScenario95_BeefFragmentation`      | [harness](harness/scenarios/scenario95_test.go) |
+| 96 | NACK recovery on the BEEF plane         | `TestScenario96_BeefNackRecovery`       | [harness](harness/scenarios/scenario96_test.go) |
+| 97 | Per-domain manifest coordination        | `TestScenario97_BeefDomainAdoption`     | [harness](harness/scenarios/scenario97_test.go) · harness only |
+| 98 | Plane independence (concurrent tx+BEEF) | `TestScenario98_PlaneIndependence`      | [harness](harness/scenarios/scenario98_test.go) |
+
+Scenario 93 brute-forces two topics that co-reside in one plane group, so the
+in-group topic filter (not group election) separates listeners — and proves
+sibling emissions of one multi-topic submission share a ContentID without
+suppressing each other. Scenario 94 includes the real BRC-62 specification
+example with listener ContentID verification (byte-identical carriage).
+Scenario 97 is in-process (wire encode → decode → registry → evaluator):
+per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
+
 ## 99 — End-to-end smoke
 
 | #   | Title                      | Test                            | Files                                                                                           |
@@ -198,4 +225,5 @@ whole and retransmits it, and the re-decoalesced bundle closes the gap.
 | `make test-ssm`              | `Scenario6[01]`                 | SSM (RFC 4607)                 |
 | `make test-manifest`         | `Scenario7[0-2]`                | BRC-139 / auto-shard-config    |
 | `make test-coalesce`         | `Scenario9[01]`                 | BRC-142 coalescing / bundle    |
+| `make test-beef`             | `Scenario9[2-8]`                | BRC-148 BEEF object plane      |
 | `make test-one T=ScenarioNN` | single                          | run one scenario               |

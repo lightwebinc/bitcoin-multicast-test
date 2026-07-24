@@ -72,7 +72,13 @@ func Build(ctx context.Context, s ImageSpec, force bool) error {
 	// Fall back to a temporary go.mod replace directive for environments
 	// without the workspace (e.g. CI agents that check out a single repo).
 	workFile := filepath.Join(filepath.Dir(s.RepoDir), "go.work")
-	var extraEnv []string
+	// PWD must match cmd.Dir: when the repo root is reached through a
+	// symlink (e.g. ~/repo → SyncWork/repo), a stale/absent PWD makes the
+	// go tool resolve the physical working directory, which then fails the
+	// lexical workspace-membership match against go.work's use paths. A
+	// consistent PWD (what an interactive shell provides) keeps the logical
+	// path authoritative.
+	extraEnv := []string{"PWD=" + s.RepoDir}
 	if _, err := os.Stat(workFile); err == nil {
 		extraEnv = append(extraEnv, "GOWORK="+workFile)
 	} else {
@@ -182,6 +188,12 @@ func DefaultSpecs(repoRoot string) []ImageSpec {
 			MainPkg: "./cmd/send-anchor-frame",
 			Binary:  "send-anchor-frame",
 			Tag:     "send-anchor-frame:harness",
+		},
+		{
+			RepoDir: filepath.Join(repoRoot, "beef-generator"),
+			MainPkg: "./cmd/beef-gen",
+			Binary:  "beef-gen",
+			Tag:     "beef-gen:harness",
 		},
 	}
 }

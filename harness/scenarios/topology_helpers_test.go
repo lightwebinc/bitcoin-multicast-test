@@ -130,6 +130,7 @@ var specialBinaries = map[string]string{
 	"send-block-announce": "send-block-announce:harness",
 	"send-subtree-data":   "send-subtree-data:harness",
 	"send-anchor-frame":   "send-anchor-frame:harness",
+	"beef-gen":            "beef-gen:harness",
 }
 
 // startGenerator starts the source container and registers cleanup.
