@@ -72,7 +72,7 @@ make test-one T=ScenarioNN
 | 31  | BRC-131 block announcement: NACK retransmission      | `TestScenario31_BlockAnnounceRetransmit`  | [harness](harness/scenarios/scenario31_test.go)  |
 | 32  | BRC-132 subtree data: basic delivery                 | `TestScenario32_SubtreeDataDelivery`      | [harness](harness/scenarios/scenario32_test.go)      |
 | 33  | BRC-132 subtree data: fragmentation                  | `TestScenario33_SubtreeDataFragmentation` | [harness](harness/scenarios/scenario33_test.go) |
-| 34  | BRC-132 subtree data: NACK retransmission (skipped — pending fragment-level gap tracking) | `TestScenario34_SubtreeDataRetransmit`    | [harness](harness/scenarios/scenario34_test.go)    |
+| 34  | BRC-132 subtree data: fragment-level NACK retransmission | `TestScenario34_SubtreeDataRetransmit`    | [harness](harness/scenarios/scenario34_test.go)    |
 | 35  | Block header egress (via the 8727 block push lane)   | `TestScenario35_BlockHeaderEgress`        | [harness](harness/scenarios/scenario35_test.go)        |
 | 36  | BRC-134 anchor frame: basic delivery                 | `TestScenario36_AnchorDelivery`           | [harness](harness/scenarios/scenario36_test.go)            |
 | 37  | BRC-134 anchor frame: NACK retransmission            | `TestScenario37_AnchorRetransmit`         | [harness](harness/scenarios/scenario37_test.go)          |
@@ -240,5 +240,5 @@ reproduced identically with a listener built from the pre-BRC-148 commit:
   signature; suspect: the v1.7.x emitter-change re-baseline heuristic at low
   frame rates). Gap detection is proven working at higher rates (08, 96, 99).
 
-These need their own investigation; they are not BRC-148 defects.
+These need their own investigation; they are not BRC-148 defects. (Scenario 34, previously skipped, now passes with fragment-level gap tracking.)
 

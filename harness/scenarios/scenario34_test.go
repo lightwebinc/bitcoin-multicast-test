@@ -16,10 +16,6 @@ import (
 // 10% loss on listeners + BRC-132 frames. Retry endpoint caches them.
 // Listeners detect gaps and NACK → retransmit fills them.
 func TestScenario34_SubtreeDataRetransmit(t *testing.T) {
-	t.Skip("pending listener fragment-level gap tracking: a pushed subtree is a " +
-		"single-frame flow (one root = one flow, SeqNum 1), so whole-frame SeqNum-gap " +
-		"recovery no longer applies; fragment caching at the retry endpoint landed " +
-		"with BRC-148, but the listener does not yet NACK missing fragments")
 	ctx := context.Background()
 	e, _ := retryTopology(t, "s34")
 	// TXID_DEDUP_LOCAL_CAP=0 disables the proxy's ingress dedup so multiple
