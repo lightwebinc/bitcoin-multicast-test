@@ -192,17 +192,16 @@ BRC-139 manifest extension. `make test-beef`.
 | #  | Title                                   | Test                                    | Files                                           |
 | -- | --------------------------------------- | --------------------------------------- | ----------------------------------------------- |
 | 92 | Submit → deliver (open port + lane)     | `TestScenario92_BeefSubmitDeliver`      | [harness](harness/scenarios/scenario92_test.go) |
-| 93 | Multi-topic + in-group topic filter     | `TestScenario93_BeefTopicFilter`        | [harness](harness/scenarios/scenario93_test.go) |
 | 94 | Version filter + verbatim carriage      | `TestScenario94_BeefVersionFilterVerbatim` | [harness](harness/scenarios/scenario94_test.go) |
 | 95 | Large-object fragmentation              | `TestScenario95_BeefFragmentation`      | [harness](harness/scenarios/scenario95_test.go) |
 | 96 | NACK recovery on the BEEF plane         | `TestScenario96_BeefNackRecovery`       | [harness](harness/scenarios/scenario96_test.go) |
 | 97 | Per-domain manifest coordination        | `TestScenario97_BeefDomainAdoption`     | [harness](harness/scenarios/scenario97_test.go) · harness only |
 | 98 | Plane independence (concurrent tx+BEEF) | `TestScenario98_PlaneIndependence`      | [harness](harness/scenarios/scenario98_test.go) |
 
-Scenario 93 brute-forces two topics that co-reside in one plane group, so the
-in-group topic filter (not group election) separates listeners — and proves
-sibling emissions of one multi-topic submission share a ContentID without
-suppressing each other. Scenario 94 includes the real BRC-62 specification
+The OSS BEEF harness covers the single-topic stance only; multi-topic fan-out
+is a commercial capability tested elsewhere (the OSS proxy rejects a submission
+record naming more than one topic — `bsp_beef_submissions_total{result="multi_topic"}`).
+Scenario 94 includes the real BRC-62 specification
 example with listener ContentID verification (byte-identical carriage).
 Scenario 97 is in-process (wire encode → decode → registry → evaluator):
 per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
