@@ -169,6 +169,7 @@ Validates the [BRC-142 coalescing frame](https://github.com/lightwebinc/bsv-mult
 
 | #  | Title                          | Test                               | Files                                                                          |
 | -- | ------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------ |
+| 89 | Re-bucket loss / parent recovery | `TestScenario89_RebucketLossRecovery` | [harness](harness/scenarios/scenario89_test.go) · generation-mismatch re-bucket + parent-stream NACK recovery + unguarded alarm |
 | 90 | Coalesce → decoalesce delivery | `TestScenario90_CoalesceDelivery`  | [harness](harness/scenarios/scenario90_test.go) · proxy `COALESCE` → listener  |
 | 91 | Coalesce loss / NACK recovery  | `TestScenario91_CoalesceLossRecovery` | [harness](harness/scenarios/scenario91_test.go) · bundle-unit retry recovery |
 
@@ -223,7 +224,7 @@ per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
 | `make test-bgp`              | `Scenario4[02]`                 | BGP (all currently skip)       |
 | `make test-ssm`              | `Scenario6[01]`                 | SSM (RFC 4607)                 |
 | `make test-manifest`         | `Scenario7[0-2]`                | BRC-139 / auto-shard-config    |
-| `make test-coalesce`         | `Scenario9[01]`                 | BRC-142 coalescing / bundle    |
+| `make test-coalesce`         | `Scenario(89\|9[01])`           | BRC-142 coalescing / bundle    |
 | `make test-beef`             | `Scenario9[2-8]`                | BRC-148 BEEF object plane      |
 | `make test-one T=ScenarioNN` | single                          | run one scenario               |
 

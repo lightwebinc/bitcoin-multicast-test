@@ -24,7 +24,7 @@ test-manifest: ## Run BRC-139 manifest / auto-shard-config scenarios
 	$(GOTEST) -timeout 5m -run 'Scenario7[0-2]'
 
 test-coalesce: ## Run BRC-142 coalescing / bundle scenarios
-	$(GOTEST) -timeout 10m -run 'Scenario9[01]'
+	$(GOTEST) -timeout 12m -run 'Scenario(89|9[01])'
 
 test-beef: ## Run BRC-148 BEEF object plane scenarios
 	$(GOTEST) -timeout 25m -run 'Scenario9[2-8]'
