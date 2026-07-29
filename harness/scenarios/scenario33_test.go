@@ -19,7 +19,7 @@ func TestScenario33_SubtreeDataFragmentation(t *testing.T) {
 	e, _, _, _ := basicTopology(t, "s33")
 	e.PatchEnv("s33-proxy", map[string]string{
 		"SUBTREE_LISTEN_PORT": "8726",
-		"FRAG_MTU":        "1500",
+		"FRAG_MTU":            "1500",
 	})
 	for _, l := range []string{"s33-listener1", "s33-listener2", "s33-listener3"} {
 		e.PatchEnv(l, map[string]string{"SUBTREE_DATA_ENABLED": "true"})

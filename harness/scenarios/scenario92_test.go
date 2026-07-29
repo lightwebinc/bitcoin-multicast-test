@@ -20,7 +20,7 @@ func TestScenario92_BeefSubmitDeliver(t *testing.T) {
 	ctx := context.Background()
 	e, _, _, _ := basicTopology(t, "s92")
 	e.PatchEnv("s92-proxy", map[string]string{
-		"TCP_LISTEN_PORT": "9002", // open tx port, TCP form (records ride it)
+		"TCP_LISTEN_PORT":  "9002", // open tx port, TCP form (records ride it)
 		"BEEF_LISTEN_PORT": "8728", // optional dedicated lane (flow separation)
 	})
 	for _, l := range []string{"s92-listener1", "s92-listener2", "s92-listener3"} {
