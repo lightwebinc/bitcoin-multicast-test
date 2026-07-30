@@ -260,6 +260,51 @@ func retryTopology(t *testing.T, prefix string) (*env.Env, map[string]string) {
 	return e, renv
 }
 
+// retryTopologyNACKEnv is retryTopology with per-listener NACK timing overrides.
+// The listener reads NACK_* from the environment, so a scenario can compare
+// timing profiles without rebuilding an image — which is what makes measuring
+// LAN-tuned against inter-fabric-tuned timing on one rig possible (scenario 75).
+func retryTopologyNACKEnv(t *testing.T, prefix string, nackEnv map[string]string) *env.Env {
+	t.Helper()
+	e := env.New(t, dockerdriver.New())
+
+	e.AddNode(driver.NodeConfig{
+		Name:        prefix + "-proxy",
+		Image:       "shard-proxy:harness",
+		IPv6:        "fd10::2",
+		Env:         proxyEnv(),
+		MetricsPort: 9100,
+		Role:        driver.RoleProxy,
+	})
+
+	for i, suffix := range []string{"1", "2", "3"} {
+		lenv := listenerEnv()
+		lenv["RETRY_ENDPOINTS"] = "[fd10::20]:9300"
+		for k, v := range nackEnv {
+			lenv[k] = v
+		}
+		e.AddNode(driver.NodeConfig{
+			Name:        prefix + "-listener" + suffix,
+			Image:       "shard-listener:harness",
+			IPv6:        fmt.Sprintf("fd10::1%d", i+1),
+			Env:         lenv,
+			MetricsPort: 9200,
+			Role:        driver.RoleListener,
+		})
+	}
+
+	e.AddNode(driver.NodeConfig{
+		Name:        prefix + "-retry1",
+		Image:       "retry-endpoint:harness",
+		IPv6:        "fd10::20",
+		Env:         retryEnv(),
+		MetricsPort: 9400,
+		Role:        driver.RoleRetry,
+	})
+
+	return e
+}
+
 // sumListenerDelta aggregates a metric across all 3 listeners.
 func sumListenerDelta(prefix, metric string, before, after [3]map[string]float64) float64 {
 	var sum float64

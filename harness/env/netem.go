@@ -107,6 +107,33 @@ func ApplyNetemLoss(ctx context.Context, containerName string, lossPct float64) 
 	return nil
 }
 
+// ApplyNetemWAN emulates an INTER-FABRIC path on the host-side veth peer of the
+// container's eth0: a one-way propagation delay (so RTT is 2x delayMs when both
+// directions are shaped) plus loss. This is the posture NACK timing must survive
+// — a lab veth RTT is ~0.8ms, three orders of magnitude below a production
+// region-to-region path, so timing tuned on an unshaped lab is untested for the
+// deployment it is meant for. jitterMs feeds netem's delay jitter, which also
+// reorders, exercising the tracker's forward-jump handling.
+func ApplyNetemWAN(ctx context.Context, containerName string, delayMs, jitterMs int, lossPct float64) error {
+	veth, err := hostVethFor(ctx, containerName)
+	if err != nil {
+		return fmt.Errorf("hostVethFor %s: %w", containerName, err)
+	}
+	args := []string{"qdisc", "add", "dev", veth, "root", "netem",
+		"delay", fmt.Sprintf("%dms", delayMs)}
+	if jitterMs > 0 {
+		args = append(args, fmt.Sprintf("%dms", jitterMs), "distribution", "normal")
+	}
+	if lossPct > 0 {
+		args = append(args, "loss", fmt.Sprintf("%.1f%%", lossPct))
+	}
+	out, err := exec.CommandContext(ctx, "tc", args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("tc qdisc add (wan) on %s: %w\n%s", veth, err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
 // RemoveNetemLoss removes the tc netem qdisc from the host-side veth peer of
 // the container's eth0.
 func RemoveNetemLoss(ctx context.Context, containerName string) error {

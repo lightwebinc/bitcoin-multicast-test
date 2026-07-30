@@ -140,6 +140,7 @@ Needs only `go` + loopback (no Docker fabric).
 | #  | Title                          | Test                                  | Files                                                          |
 | -- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------- |
 | 74 | Cross-domain NACK proxying     | `TestScenario74_NACKProxyCrossDomain` | [harness](harness/scenarios/scenario74_test.go) · harness only |
+| 75 | NACK repair at inter-fabric RTT | `TestScenario75_NACKRepairInterFabric` | [harness](harness/scenarios/scenario75_test.go) · requires sudo (netem) |
 
 Two domains on one fabric (isolated by mc-group-id): a proxy + upstream
 retry-endpoint feed a bridge `shard-listener` whose multicast egress re-emits
