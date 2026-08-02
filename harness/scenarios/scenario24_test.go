@@ -49,7 +49,12 @@ func TestScenario24_FragmentationHashVerify(t *testing.T) {
 	beforeL1 := e.Snapshot(ctx, "s24-listener1")
 
 	genCmd := subtxGenCmd("[fd10::2]:8725")
-	genCmd = append(genCmd, "-payload-size", "2048")
+	// Pin brc124: the reassembly hash check (armed by VERIFY_PAYLOAD_HASH)
+	// is EF-aware (canonical TxID — SHA256d(payload) for raw, objfmt.TxID
+	// for EF), so either format would pass honestly; the pin keeps
+	// deterministic RAW-lane coverage of fragmentation + reassembly verify
+	// (the EF verify path is covered by shard-listener unit tests).
+	genCmd = append(genCmd, "-payload-format", "brc124", "-payload-size", "2048")
 	startGenerator(t, ctx, "s24", genCmd)
 	waitGenerator(t, ctx, "s24")
 

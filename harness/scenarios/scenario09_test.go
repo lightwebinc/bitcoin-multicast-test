@@ -50,7 +50,12 @@ func TestScenario09_ListenerPayloadVerification(t *testing.T) {
 	beforeL1 := e.Snapshot(ctx, "s09-listener1")
 
 	genCmd := subtxGenCmd("[fd10::2]:8725")
-	genCmd = append(genCmd, "-corrupt-txid-rate", "50")
+	// Pin brc124: the listener's -verify-payload-hash is EF-aware (it checks
+	// the canonical TxID — SHA256d(payload) for raw, objfmt.TxID for EF), so
+	// either format would pass honestly; the pin keeps deterministic RAW-lane
+	// coverage of the corrupt-TxID drop path here (the EF verify path is
+	// covered by shard-listener listener/reassembly unit tests).
+	genCmd = append(genCmd, "-payload-format", "brc124", "-corrupt-txid-rate", "50")
 	startGenerator(t, ctx, "s09", genCmd)
 	waitGenerator(t, ctx, "s09")
 
