@@ -135,7 +135,7 @@ identity triple on every line, and a single `host.inventory` event nesting
 os/cpu/mem/net/build groups with both IPv4 and IPv6 address keys per interface.
 Needs only `go` + loopback (no Docker fabric).
 
-## 74 — Cross-domain NACK proxying
+## 74–75 — Cross-domain NACK proxying
 
 | #  | Title                          | Test                                  | Files                                                          |
 | -- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------- |
@@ -160,10 +160,10 @@ Scenarios 80–83 (ip6gre mesh replication, collapsed-mesh full-duplex demo,
 WireGuard admin overlay, consumer-edge scale-out) and their privileged netns
 repro scripts now live in a private repo. They were removed from this public
 harness. The 80–89 decade stays **reserved** for mesh scenarios so the numbering
-registry never collides. The transport they exercise is the
-[integrated-infra `mc-router` role](https://github.com/lightwebinc/integrated-infra/blob/main/docs/mesh.md).
+registry never collides. The transport they exercise is the private ops mesh
+(`mc-router`) automation.
 
-## 90–91 — BRC-142 coalescing (bundle frame)
+## 89–91 — BRC-142 coalescing (bundle frame)
 
 Validates the [BRC-142 coalescing frame](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-142-coalescing-frame.md)
 (bundle format, `FrameVer 0x08`) — origin-side packing to cut fabric pps.
@@ -194,6 +194,7 @@ BRC-139 manifest extension. `make test-beef`.
 | #  | Title                                   | Test                                    | Files                                           |
 | -- | --------------------------------------- | --------------------------------------- | ----------------------------------------------- |
 | 92 | Submit → deliver (open port + lane)     | `TestScenario92_BeefSubmitDeliver`      | [harness](harness/scenarios/scenario92_test.go) |
+| 93 | Fragmented-BEEF loss recovery (fragment gap → NACK → retransmit) | `TestScenario93_BeefFragmentLossRecovery` | [harness](harness/scenarios/scenario93_test.go) |
 | 94 | Version filter + verbatim carriage      | `TestScenario94_BeefVersionFilterVerbatim` | [harness](harness/scenarios/scenario94_test.go) |
 | 95 | Large-object fragmentation              | `TestScenario95_BeefFragmentation`      | [harness](harness/scenarios/scenario95_test.go) |
 | 96 | NACK recovery on the BEEF plane         | `TestScenario96_BeefNackRecovery`       | [harness](harness/scenarios/scenario96_test.go) |
@@ -201,7 +202,7 @@ BRC-139 manifest extension. `make test-beef`.
 | 98 | Plane independence (concurrent tx+BEEF) | `TestScenario98_PlaneIndependence`      | [harness](harness/scenarios/scenario98_test.go) |
 
 The OSS BEEF harness covers the single-topic stance only; multi-topic fan-out
-is a commercial capability tested elsewhere (the OSS proxy rejects a submission
+requires an authenticated submit policy and is tested elsewhere (the OSS proxy rejects a submission
 record naming more than one topic — `bsp_beef_submissions_total{result="multi_topic"}`).
 Scenario 94 includes the real BRC-62 specification
 example with listener ContentID verification (byte-identical carriage).

@@ -42,7 +42,7 @@ func TestScenario75_NACKRepairInterFabric(t *testing.T) {
 		env   map[string]string
 	}{
 		{"lan-tuned", "l", map[string]string{
-			// What the commercial listener hardcoded before it was configurable.
+			// What earlier downstream builds hardcoded before it was configurable.
 			"NACK_JITTER_MAX":   "20ms",
 			"NACK_BACKOFF_BASE": "200ms", // < RTT: retries outrun replies
 			"NACK_BACKOFF_MAX":  "2s",

@@ -62,9 +62,11 @@ make test-quick    # tier-1 filter scenarios (~60s)
 make test-retransmit  # NACK/retransmit scenarios
 make test-frag     # fragmentation scenarios
 make test-bgp      # BGP ingress / anycast scenarios (currently all skip — deferred)
+make test-ssm      # SSM scenarios (RFC 4607)
 make test-manifest # BRC-139 manifest / auto-shard-config scenarios
 make test-coalesce # BRC-142 coalescing / bundle-frame scenarios
 make test-beef     # BRC-148 BEEF object plane scenarios
+make test-one T=Scenario36  # a single scenario test by name
 make help          # show all targets
 ```
 
@@ -82,15 +84,15 @@ test names, make-target filters). Highlights:
 - **60/61 — SSM (RFC 4607)** (`make test-ssm`): `netjoin` source-group
   join/leave sanity plus ASM-fallback startup; see the
   [SSM Support Plan](https://github.com/lightwebinc/bsv-multicast/blob/main/DESIGN.md#source-specific-multicast-ssm).
-- **70–73 — BRC-139 manifest + unified logging** (`make test-manifest`):
-  wire pipeline, live-reshard signal, adoption safety gates, and the
+- **70–73 — BRC-139 manifest + unified logging**: `make test-manifest` runs
+  70–72 (wire pipeline, live-reshard signal, adoption safety gates); 73 — the
   `shard-manifest` [unified logging](https://github.com/lightwebinc/shard-common/blob/main/docs/logging.md)
-  emit contract.
+  emit contract — runs standalone (`make test-one T=Scenario73`).
 - **92–98 — BRC-148 BEEF object plane** (`make test-beef`): submission-record
   ingress (open port + dedicated lane), topic/version filtered delivery,
   fragmentation, NACK recovery, per-domain manifest coordination, and
   concurrent-plane independence
-- **90/91 — BRC-142 coalescing** (`make test-coalesce`): origin-proxy bundle
+- **89–91 — BRC-142 coalescing** (`make test-coalesce`): origin-proxy bundle
   packing, listener edge-decoalescing, and bundle-unit NACK recovery; see the
   [BRC-142 spec](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-142-coalescing-frame.md).
 
