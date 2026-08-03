@@ -169,7 +169,12 @@ func startGenerator(t *testing.T, ctx context.Context, prefix string, cmd []stri
 // waitGenerator waits for the generator container to exit and logs exit code.
 func waitGenerator(t *testing.T, ctx context.Context, prefix string) {
 	t.Helper()
-	exitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	// Must exceed the longest -duration any scenario passes to the generator
+	// (scenario 75 runs 30s). At exactly 30s the wait raced the generator's own
+	// runtime, so the drain sometimes began while traffic was still flowing and
+	// the measurement window varied run to run. This bound only bites when a
+	// generator genuinely hangs.
+	exitCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	code, err := dockerdriver.New().WaitExit(exitCtx, prefix+"-source")
 	if err != nil {

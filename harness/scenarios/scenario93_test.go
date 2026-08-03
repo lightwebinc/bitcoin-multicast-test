@@ -54,6 +54,7 @@ func TestScenario93_BeefFragmentLossRecovery(t *testing.T) {
 	const objects = 40.0
 	beforeL := snapshotListeners(t, e, ctx, "s93")
 	beforeR := e.Snapshot(ctx, "s93-retry1")
+	beforeP := e.Snapshot(ctx, "s93-proxy")
 
 	// 4 KiB objects at FRAG_MTU 1280 → 4 fragments each; 40 objects ≈ 160
 	// fragments per listener, so 10% loss yields dozens of fragment gaps per
@@ -81,6 +82,18 @@ func TestScenario93_BeefFragmentLossRecovery(t *testing.T) {
 		completed, mismatch, gaps, nacks)
 	t.Logf("retry: cached=%.0f retransmits=%.0f", cached, retransmits)
 
+	dp := metrics.DeltaMap(beforeP, metrics.ScrapeOrFail(t, e.MetricsURL(ctx, "s93-proxy")))
+	t.Logf("proxy: objects=%.0f fragmented=%.0f fragments_emitted=%.0f",
+		dp["bsp_beef_submissions_total"], dp["bsp_frames_fragmented_total"],
+		dp["bsp_fragments_emitted_total"])
+	for i, label := range []string{"listener1", "listener2", "listener3"} {
+		d := metrics.DeltaMap(beforeL[i], afterL[i])
+		t.Logf("%s: started=%.0f completed=%.0f late_frags=%.0f abandoned=%.0f delivered=%.0f",
+			label, d["bsl_reassembly_started_total"], d["bsl_reassembly_completed_total"],
+			d["bsl_reassembly_late_fragments_total"], d["bsl_reassembly_abandoned_total"],
+			d["bsl_frames_forwarded_total"]+d["bsl_egress_errors_total"])
+	}
+
 	// The recovery machinery must move at FRAGMENT granularity...
 	metrics.AssertGT(t, "fragment gaps detected under loss", gaps)
 	metrics.AssertGT(t, "fragment NACKs dispatched", nacks)
@@ -93,4 +106,38 @@ func TestScenario93_BeefFragmentLossRecovery(t *testing.T) {
 	// tolerating tail-loss timeouts.
 	metrics.AssertNear(t, "objects reassembled across listeners", completed, 3*objects, 0.10)
 	metrics.AssertZero(t, "recovered bytes verify (ContentID)", mismatch)
+
+	// The ceiling half of that invariant, stated exactly rather than by
+	// tolerance: NO listener may reassemble an object more than once.
+	//
+	// This is where the scenario used to fail (measured 230-241 against an
+	// expected ~120) and the failure was real, not a mis-set expectation.
+	//
+	// retryEnv sets neither beacon flag, so the retry endpoint runs its BINARY
+	// defaults: multicast repair on, unicast off. One listener's request is
+	// therefore answered to the whole band and the other two members each
+	// receive a fragment they already consumed. (The shipped ops posture is the
+	// opposite — unicast-only — so this is the harness's default, not the
+	// fabric's; the invariant below is the listener's to hold either way,
+	// because which one applies is the responder's choice.)
+	//
+	// The listener used to open a fresh reassembly slot for that copy (the
+	// live-slot duplicate check dies with the slot), which re-REASSEMBLED the
+	// object — the pre-fix control run logged completed=95 against delivered=40
+	// per listener, so the egress claim on (ContentID, TopicID) was catching the
+	// duplicates before the wire; it is optional (-egress-dedup-local-cap 0) and
+	// shorter-lived than the recovery horizon, so that is a cushion, not the
+	// invariant. Worse, the never-fillable slot expired into an onIncomplete
+	// NACK for fragments the listener already had — repair feeding repair.
+	// Suppressing the late copy against a completion memory is the fix;
+	// `late_frags > 0` keeps the ceiling from passing vacuously by proving the
+	// copies really do arrive.
+	late := sumListenerDelta("s93", "bsl_reassembly_late_fragments_total", beforeL, afterL)
+	t.Logf("late repair copies suppressed across listeners: %.0f", late)
+	metrics.AssertGT(t, "late repair copies reached non-losing listeners", late)
+	for i, label := range []string{"listener1", "listener2", "listener3"} {
+		d := metrics.DeltaMap(beforeL[i], afterL[i])
+		metrics.AssertLT(t, label+" reassembled each object at most once",
+			d["bsl_reassembly_completed_total"], objects+1)
+	}
 }
