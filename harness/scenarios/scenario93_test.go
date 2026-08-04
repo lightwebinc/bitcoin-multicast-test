@@ -141,3 +141,113 @@ func TestScenario93_BeefFragmentLossRecovery(t *testing.T) {
 			d["bsl_reassembly_completed_total"], objects+1)
 	}
 }
+
+// Scenario 93b — fragmented BEEF under loss, UNICAST-ONLY repair
+//
+// The variant above runs the retry on its BINARY defaults (multicast repair
+// on, unicast off), which is NOT the shipped ops posture: the fabric sets
+// beacon_flags_multicast=false, so every repair is a unicast reply to the
+// requesting listener. Until this test existed that path had no coverage at
+// all — the flags are set by no other scenario.
+//
+// It matters because unicast repair has a failure mode multicast does not: the
+// reply is a socket read on the requester, so it only becomes a delivered
+// frame if the listener re-injects it into the worker that owns the flow.
+// A control run before shard-listener v1.20.0 booked every gap as recovered
+// (bsl_gaps_unrecovered_total = 0) while completions sat at 22-30 of 40 per
+// listener — the books balanced while the objects never finished, because
+// reassembly state is per-worker and nothing registered the re-injection.
+// v1.20.0 wires RegisterRecover per worker.
+//
+// The assertion that distinguishes fixed from broken is therefore COMPLETIONS,
+// not recovery counters: a gap ledger that balances proves nothing on its own.
+func TestScenario93b_BeefFragmentLossRecoveryUnicast(t *testing.T) {
+	ctx := context.Background()
+	e, _ := retryTopology(t, "s93b")
+	e.PatchEnv("s93b-proxy", map[string]string{
+		"TCP_LISTEN_PORT": "9002",
+		"FRAG_MTU":        "1280",
+	})
+	for _, l := range []string{"s93b-listener1", "s93b-listener2", "s93b-listener3"} {
+		e.PatchEnv(l, map[string]string{
+			"BEEF_TOPICS":         "tm_s93b",
+			"VERIFY_PAYLOAD_HASH": "true",
+		})
+	}
+	// The shipped ops posture: repair is answered UNICAST to the requester
+	// only. No band copy reaches a listener that did not ask.
+	e.PatchEnv("s93b-retry1", map[string]string{
+		"BEEF_ENABLED":           "true",
+		"BEACON_FLAGS_MULTICAST": "false",
+		"BEACON_FLAGS_UNICAST":   "true",
+	})
+	e.StartAll(ctx)
+	e.Sleep(4*time.Second, "MLD querier settle")
+
+	for _, l := range []string{"s93b-listener1", "s93b-listener2", "s93b-listener3"} {
+		if err := env.ApplyNetemLoss(ctx, l, 10.0); err != nil {
+			t.Fatalf("netem loss %s: %v", l, err)
+		}
+		t.Cleanup(func() { env.RemoveNetemLoss(ctx, l) }) //nolint:errcheck
+	}
+
+	const objects = 40.0
+	beforeL := snapshotListeners(t, e, ctx, "s93b")
+	beforeR := e.Snapshot(ctx, "s93b-retry1")
+
+	startGenerator(t, ctx, "s93b", []string{
+		"beef-gen", "-addr", "[fd10::2]:9002", "-topics", "tm_s93b",
+		"-object-bytes", "4096", "-count", "40", "-interval", "80ms",
+	})
+	waitGenerator(t, ctx, "s93b")
+	e.Sleep(12*time.Second, "fragment NACK pipeline drain")
+
+	afterL := scrapeListeners(t, e, ctx, "s93b")
+	afterR := metrics.ScrapeOrFail(t, e.MetricsURL(ctx, "s93b-retry1"))
+
+	gaps := sumListenerDelta("s93b", "bsl_gaps_detected_total", beforeL, afterL)
+	nacks := sumListenerDelta("s93b", "bsl_nacks_dispatched_total", beforeL, afterL)
+	completed := sumListenerDelta("s93b", "bsl_reassembly_completed_total", beforeL, afterL)
+	mismatch := sumListenerDelta("s93b", "bsl_reassembly_hash_mismatch_total", beforeL, afterL)
+	unrecovered := sumListenerDelta("s93b", "bsl_gaps_unrecovered_total", beforeL, afterL)
+	late := sumListenerDelta("s93b", "bsl_reassembly_late_fragments_total", beforeL, afterL)
+
+	deltaR := metrics.DeltaMap(beforeR, afterR)
+	t.Logf("listeners: completed=%.0f/%.0f mismatch=%.0f gaps=%.0f nacks=%.0f unrecovered=%.0f late=%.0f",
+		completed, 3*objects, mismatch, gaps, nacks, unrecovered, late)
+	t.Logf("retry: cached=%.0f retransmits=%.0f unicast=%.0f",
+		deltaR["bre_frames_cached_total"], deltaR["bre_retransmits_total"],
+		deltaR["bre_unicast_retransmits_total"])
+	for i, label := range []string{"listener1", "listener2", "listener3"} {
+		d := metrics.DeltaMap(beforeL[i], afterL[i])
+		t.Logf("%s: started=%.0f completed=%.0f abandoned=%.0f",
+			label, d["bsl_reassembly_started_total"],
+			d["bsl_reassembly_completed_total"], d["bsl_reassembly_abandoned_total"])
+	}
+
+	// Repair must actually run, and it must be the UNICAST path.
+	metrics.AssertGT(t, "fragment gaps detected under loss", gaps)
+	metrics.AssertGT(t, "fragment NACKs dispatched", nacks)
+	metrics.AssertGT(t, "retry served unicast retransmits", deltaR["bre_unicast_retransmits_total"])
+
+	// THE C3 ASSERTION: recovered fragments must finish OBJECTS. This is what
+	// the pre-v1.20.0 control run failed while its gap ledger looked perfect.
+	metrics.AssertNear(t, "objects reassembled across listeners", completed, 3*objects, 0.10)
+	metrics.AssertZero(t, "recovered bytes verify (ContentID)", mismatch)
+
+	// Zero MULTICAST retransmits proves the posture: no repair was ever put on
+	// the band, so a listener that did not ask received no copy.
+	metrics.AssertZero(t, "no multicast retransmits under unicast-only repair", deltaR["bre_retransmits_total"])
+
+	// Late fragments are still expected and must still be SUPPRESSED. They do
+	// not come from band copies here (there are none) but from the requester's
+	// own raced replies — a re-NACK or tail probe answered after the first copy
+	// already completed the slot. The invariant is therefore the ceiling, not
+	// absence: a late copy must never re-open a completed slot and reassemble
+	// the object a second time.
+	for i, label := range []string{"listener1", "listener2", "listener3"} {
+		d := metrics.DeltaMap(beforeL[i], afterL[i])
+		metrics.AssertLT(t, label+" reassembled each object at most once",
+			d["bsl_reassembly_completed_total"], objects+1)
+	}
+}

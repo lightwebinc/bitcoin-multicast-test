@@ -195,6 +195,7 @@ BRC-139 manifest extension. `make test-beef`.
 | -- | --------------------------------------- | --------------------------------------- | ----------------------------------------------- |
 | 92 | Submit → deliver (open port + lane)     | `TestScenario92_BeefSubmitDeliver`      | [harness](harness/scenarios/scenario92_test.go) |
 | 93 | Fragmented-BEEF loss recovery (fragment gap → NACK → retransmit) | `TestScenario93_BeefFragmentLossRecovery` | [harness](harness/scenarios/scenario93_test.go) |
+| 93b | Same under **unicast-only** repair (the shipped ops posture: `beacon_flags_multicast=false`); asserts recovered fragments COMPLETE objects, not just that gaps were booked | `TestScenario93b_BeefFragmentLossRecoveryUnicast` | [harness](harness/scenarios/scenario93_test.go) |
 | 94 | Version filter + verbatim carriage      | `TestScenario94_BeefVersionFilterVerbatim` | [harness](harness/scenarios/scenario94_test.go) |
 | 95 | Large-object fragmentation              | `TestScenario95_BeefFragmentation`      | [harness](harness/scenarios/scenario95_test.go) |
 | 96 | NACK recovery on the BEEF plane         | `TestScenario96_BeefNackRecovery`       | [harness](harness/scenarios/scenario96_test.go) |
