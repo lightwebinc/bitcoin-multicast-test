@@ -1,6 +1,6 @@
 module github.com/lightwebinc/multicast-test
 
-go 1.25.13
+go 1.26.6
 
 require (
 	github.com/lightwebinc/shard-common v0.18.0
