@@ -154,12 +154,12 @@ Asserts the full chain: downstream `bre_proxy_recovered_total`, upstream
 `bre_unicast_retransmits_total`, and consumer `bsl_gaps_suppressed_total`. See
 [BRC-126](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-126-retransmission-protocol.md).
 
-## 80–89 — Multicast mesh (ip6gre fabric) — moved to private ops
+## 80–88 — Multicast mesh (ip6gre fabric) — moved to private ops
 
 Scenarios 80–83 (ip6gre mesh replication, collapsed-mesh full-duplex demo,
 WireGuard admin overlay, consumer-edge scale-out) and their privileged netns
 repro scripts now live in a private repo. They were removed from this public
-harness. The 80–89 decade stays **reserved** for mesh scenarios so the numbering
+harness. The 80–88 range stays **reserved** for mesh scenarios so the numbering
 registry never collides. The transport they exercise is the private ops mesh
 (`mc-router`) automation.
 
@@ -187,9 +187,9 @@ whole and retransmits it, and the re-decoalesced bundle closes the gap.
 Validates the [BRC-148 shard domain partition + BEEF object plane](https://github.com/lightwebinc/bsv-multicast/blob/main/docs/brc-148-shard-domain-beef-plane.md)
 (`FrameVer 0x09` on the `0x1000` band; topic-sharded, open ingress class):
 submission-record grammar on the open tx port and the optional dedicated
-lane, topic + version (encoding-capability) filtering, multi-topic sibling
-emissions, BRC-130 fragmentation, BRC-126 recovery, and the per-domain
-BRC-139 manifest extension. `make test-beef`.
+lane, topic + version (encoding-capability) filtering, BRC-130 fragmentation,
+BRC-126 recovery, and the per-domain BRC-139 manifest extension.
+`make test-beef`.
 
 | #  | Title                                   | Test                                    | Files                                           |
 | -- | --------------------------------------- | --------------------------------------- | ----------------------------------------------- |

@@ -7,6 +7,7 @@ End-to-end test suite for the Bitcoin multicast sharding pipeline. Validates
 [`shard-listener`](https://github.com/lightwebinc/shard-listener),
 [`retry-endpoint`](https://github.com/lightwebinc/retry-endpoint),
 [`subtx-generator`](https://github.com/lightwebinc/subtx-generator),
+[`beef-generator`](https://github.com/lightwebinc/beef-generator),
 and [`shard-manifest`](https://github.com/lightwebinc/shard-manifest)
 working together over an IPv6 multicast fabric.
 
@@ -47,6 +48,7 @@ repos side by side under one parent directory:
 ├── shard-listener
 ├── retry-endpoint
 ├── subtx-generator
+├── beef-generator      (BEEF scenarios 92–98)
 └── shard-manifest      (scenario 73)
 ```
 

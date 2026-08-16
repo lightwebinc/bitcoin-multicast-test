@@ -2,9 +2,9 @@ package scenarios
 
 import "testing"
 
-// Scenario 41 — BGP ingress failover (TODO stub in bash)
+// Scenario 41 — BGP ingress failover (stub)
 //
-// Bash script itself is a TODO stub.
+// Stub — BGP ingress failover not implemented (see SCENARIOS.md 40–42).
 func TestScenario41_BGPIngressFailover(t *testing.T) {
-	t.Skip("Bash script is a TODO stub — not implemented upstream")
+	t.Skip("stub — BGP ingress failover not implemented (see SCENARIOS.md 40–42)")
 }
