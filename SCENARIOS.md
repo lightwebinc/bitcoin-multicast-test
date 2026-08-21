@@ -44,7 +44,7 @@ make test-one T=ScenarioNN
 | 14  | Multi-endpoint rate limit defense               | `TestScenario14_MultiEndpointRatelimit` | [harness](harness/scenarios/scenario14_test.go) |
 | 15  | Per-chain NACK rate limit                       | `TestScenario15_ChainRatelimit`         | [harness](harness/scenarios/scenario15_test.go)          |
 | 16  | Per-group retransmit rate limit (ACK preserved) | `TestScenario16_GroupRatelimit`         | [harness](harness/scenarios/scenario16_test.go)          |
-| 17  | Recovery shortfall identity (clean regime)      | `TestScenario17_RecoveryShortfallIdentity` | [harness](harness/scenarios/scenario17_test.go) · exact `delivered == sent` + gap closure per unfiltered listener (unicast-only repair, warmup/trailer). The `unrecovered`-form is blocked on a KNOWN listener defect the scenario discovered: phantom unrecovered gaps booked for seqnums a complete retry cache has never seen |
+| 17  | Recovery shortfall identity (clean regime)      | `TestScenario17_RecoveryShortfallIdentity` | [harness](harness/scenarios/scenario17_test.go) · full exact identity: `unrecovered == sent − delivered == 0` + gap closure per unfiltered listener (unicast-only repair, warmup/trailer). Found+fixed a real tracker defect: a low-seq repair falsely tripped the proxy-restart flow reset (phantom unrecovered cascade) |
 | 18  | Unrecoverable-loss (cache MISS) shortfall identity | `TestScenario18_UnrecoverableLossShortfallIdentity` | [harness](harness/scenarios/scenario18_test.go) · same identity with `unrecovered > 0` forced by an empty retry cache (rate-limit starvation only DELAYS repair — a late range-fill still delivers, breaking exactness) |
 
 ## 20–21 — Subtree group announce (BRC-127)

@@ -75,8 +75,15 @@ func TestScenario18_UnrecoverableLossShortfallIdentity(t *testing.T) {
 		env.RemoveNetemLoss(ctx, l) //nolint:errcheck
 	}
 
+	// The trailer must be GENTLE here, unlike scenario 17's: a frame dropped
+	// during the trailer (e.g. a socket-level drop under burst) lands on a
+	// flow tail, its probe MISSes against the empty cache, and probe MISSes
+	// are deliberately never booked unrecovered — an invisible one-frame
+	// shortfall that breaks exactness. Scenario 17 is immune (its full cache
+	// recovers trailer losses); with nothing repairable, pace the trailer so
+	// nothing drops.
 	trail := subtxGenCmd("[fd10::2]:8725")
-	trail = append(trail, "-pps", "500", "-duration", "3s")
+	trail = append(trail, "-pps", "100", "-duration", "5s")
 	startGenerator(t, ctx, "s18", trail)
 	waitGenerator(t, ctx, "s18")
 

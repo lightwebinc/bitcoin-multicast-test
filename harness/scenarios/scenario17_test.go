@@ -22,14 +22,14 @@ import (
 // arriving, cannot pass. Scenario 18 asserts the unrecovered > 0 half of the
 // identity (permanent MISS loss).
 //
-// KNOWN DEFECT (discovered by this scenario, 2026-08-21): the tracker books a
-// small population of PHANTOM unrecovered gaps under these conditions —
-// seqnums the retry, holding a COMPLETE cache (cached == sent, verified), has
-// never seen (~500 cache MISSes/run at 1000pps; 7–56 booked unrecovered per
-// listener while delivered == sent exactly). Until that listener defect is
-// fixed, the full `unrecovered == sent − delivered` form cannot be asserted
-// here — unrecovered is logged, and the exact form lives in scenario 18 where
-// nothing is deliverable.
+// This scenario originally caught a real tracker defect (2026-08-21): a
+// unicast repair filling a gap at a seqNum below the proxy-restart threshold
+// fell through to the restart heuristic, flushing every other pending gap to
+// unrecovered (phantoms) and re-baselining the flow — 7–56 phantom
+// unrecovered per listener while delivered == sent held exactly. Fixed in
+// shard-listener nack.Observe (repairs return after auto-fill; only live-
+// source frames can signal a restart; regression tests in nack_test.go), so
+// the FULL identity is asserted here: unrecovered == sent − delivered == 0.
 //
 // Four preconditions make the identity exact (each guards a real leak):
 //  1. Unicast-only repair — a multicast repair duplicates delivery on
@@ -141,12 +141,13 @@ func TestScenario17_RecoveryShortfallIdentity(t *testing.T) {
 	metrics.AssertZero(t, "proxy post-stamp drops", proxyDropped)
 
 	for i, name := range []string{"listener1", "listener2", "listener3"} {
+		// The full criterion-#1 identity: closure exact AND
+		// unrecovered == sent − delivered.
+		assertRecoveryIdentity(t, name, beforeL[i], afterL[i], sent)
+		// Clean regime on top: every stamped frame was delivered — netem loss
+		// fully repaired, exactly, no tolerance (so unrecovered above is 0).
 		d := metrics.DeltaMap(beforeL[i], afterL[i])
 		delivered := d["bsl_frames_forwarded_total"] + d["bsl_egress_errors_total"]
-		metrics.AssertEq(t, name+" gap closure (detected == suppressed + unrecovered)",
-			d["bsl_gaps_detected_total"], d["bsl_gaps_suppressed_total"]+d["bsl_gaps_unrecovered_total"])
-		// The clean-regime identity: every stamped frame was delivered —
-		// netem loss fully repaired, exactly, no tolerance.
 		metrics.AssertEq(t, name+" delivered == sent (loss fully repaired)", delivered, sent)
 	}
 }
