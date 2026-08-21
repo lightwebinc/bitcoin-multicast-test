@@ -31,7 +31,7 @@ make test-one T=ScenarioNN
 | 08  | NACK retransmit with BRC-128 payloads        | `TestScenario08_NackRetransmitBRC128`        | [harness](harness/scenarios/scenario08_test.go)        |
 | 09  | Listener payload hash verification           | `TestScenario09_ListenerPayloadVerification` | [harness](harness/scenarios/scenario09_test.go) |
 
-## 10–16 — NACK / retransmit / rate limiting
+## 10–18 — NACK / retransmit / rate limiting
 
 `make test-retransmit`
 
@@ -44,6 +44,8 @@ make test-one T=ScenarioNN
 | 14  | Multi-endpoint rate limit defense               | `TestScenario14_MultiEndpointRatelimit` | [harness](harness/scenarios/scenario14_test.go) |
 | 15  | Per-chain NACK rate limit                       | `TestScenario15_ChainRatelimit`         | [harness](harness/scenarios/scenario15_test.go)          |
 | 16  | Per-group retransmit rate limit (ACK preserved) | `TestScenario16_GroupRatelimit`         | [harness](harness/scenarios/scenario16_test.go)          |
+| 17  | Recovery shortfall identity (clean regime)      | `TestScenario17_RecoveryShortfallIdentity` | [harness](harness/scenarios/scenario17_test.go) · exact `delivered == sent` + gap closure per unfiltered listener (unicast-only repair, warmup/trailer). The `unrecovered`-form is blocked on a KNOWN listener defect the scenario discovered: phantom unrecovered gaps booked for seqnums a complete retry cache has never seen |
+| 18  | Unrecoverable-loss (cache MISS) shortfall identity | `TestScenario18_UnrecoverableLossShortfallIdentity` | [harness](harness/scenarios/scenario18_test.go) · same identity with `unrecovered > 0` forced by an empty retry cache (rate-limit starvation only DELAYS repair — a late range-fill still delivers, breaking exactness) |
 
 ## 20–21 — Subtree group announce (BRC-127)
 
@@ -222,7 +224,7 @@ per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
 | ---------------------------- | ------------------------------- | ------------------------------ |
 | `make test`                  | all                             | ~30 min, all harness scenarios |
 | `make test-quick`            | `Scenario0[1-3]\|Scenario0[67]` | tier-1 filter scenarios (~60s) |
-| `make test-retransmit`       | `Scenario(99\|08\|1[0-6])`      | NACK / retransmit              |
+| `make test-retransmit`       | `Scenario(99\|08\|1[0-8])`      | NACK / retransmit              |
 | `make test-subtree-announce` | `Scenario2[01]`                 | BRC-127 subtree announce       |
 | `make test-frag`             | `Scenario2[2-6]`                | fragmentation                  |
 | `make test-block`            | `Scenario3[0-7]`                | BRC-131/132/134/135 lanes      |

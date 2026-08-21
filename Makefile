@@ -9,7 +9,7 @@ test-quick: ## Run only tier-1 filter scenarios (~60s)
 	$(GOTEST) -timeout 5m -run 'Scenario0[1-3]|Scenario0[67]'
 
 test-retransmit: ## Run NACK/retransmit scenarios
-	$(GOTEST) -timeout 15m -run 'Scenario(99|08|1[0-6])'
+	$(GOTEST) -timeout 20m -run 'Scenario(99|08|1[0-8])'
 
 test-frag: ## Run fragmentation scenarios
 	$(GOTEST) -timeout 10m -run 'Scenario2[2-6]'

@@ -461,3 +461,68 @@ func scrapeOrFail(t *testing.T, url string) map[string]float64 {
 	t.Helper()
 	return metrics.ScrapeOrFail(t, url)
 }
+
+// settleRecovery polls the listeners until the gap tracker has fully resolved
+// (no pending gaps: Δdetected == Δsuppressed + Δunrecovered on every listener)
+// AND delivery + unrecovered stopped moving between two consecutive polls.
+// This is testing.md's settle-until-stable rule: the shortfall identity is an
+// accounting statement about a CLOSED window, so scraping while a gap is still
+// pending or a repair is in flight reads as a violation that is really just an
+// open window. Worst-case honest resolution is ~15s (5 failed NACK rounds with
+// capped backoff), so callers pass a timeout comfortably above that.
+func settleRecovery(t *testing.T, e *env.Env, ctx context.Context, prefix string,
+	before [3]map[string]float64, timeout time.Duration) [3]map[string]float64 {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	var prev [3]map[string]float64
+	for {
+		cur := scrapeListeners(t, e, ctx, prefix)
+		settled := true
+		for i := 0; i < 3; i++ {
+			d := metrics.DeltaMap(before[i], cur[i])
+			pending := d["bsl_gaps_detected_total"] - d["bsl_gaps_suppressed_total"] - d["bsl_gaps_unrecovered_total"]
+			if pending != 0 || prev[i] == nil {
+				settled = false
+				break
+			}
+			pd := metrics.DeltaMap(prev[i], cur[i])
+			if pd["bsl_frames_forwarded_total"] != 0 || pd["bsl_egress_errors_total"] != 0 ||
+				pd["bsl_gaps_unrecovered_total"] != 0 {
+				settled = false
+				break
+			}
+		}
+		if settled {
+			return cur
+		}
+		if time.Now().After(deadline) {
+			for i := 0; i < 3; i++ {
+				d := metrics.DeltaMap(before[i], cur[i])
+				t.Logf("listener%d: detected=%.0f suppressed=%.0f unrecovered=%.0f",
+					i+1, d["bsl_gaps_detected_total"], d["bsl_gaps_suppressed_total"], d["bsl_gaps_unrecovered_total"])
+			}
+			t.Fatalf("recovery did not settle within %s", timeout)
+		}
+		prev = cur
+		time.Sleep(time.Second)
+	}
+}
+
+// assertRecoveryIdentity asserts the criterion-#1 shortfall identity from
+// testing.md on ONE unfiltered listener: every frame the proxy put on the
+// fabric was either delivered onward (forwarded, or attempted — the harness
+// egress target is a blackhole, so alternating refused writes land in
+// bsl_egress_errors_total and count as delivery attempts, the same accounting
+// scenario 30 pins) or is booked as a permanently unrecovered gap. Exact, no
+// tolerance. Only valid on a listener with NO shard/subtree filters — filter
+// drops happen before gap tracking, so a filtered listener's expected count is
+// unknowable from proxy metrics.
+func assertRecoveryIdentity(t *testing.T, label string, before, after map[string]float64, sent float64) {
+	t.Helper()
+	d := metrics.DeltaMap(before, after)
+	delivered := d["bsl_frames_forwarded_total"] + d["bsl_egress_errors_total"]
+	metrics.AssertEq(t, label+" gap closure (detected == suppressed + unrecovered)",
+		d["bsl_gaps_detected_total"], d["bsl_gaps_suppressed_total"]+d["bsl_gaps_unrecovered_total"])
+	metrics.AssertEq(t, label+" unrecovered == sent - delivered",
+		d["bsl_gaps_unrecovered_total"], sent-delivered)
+}

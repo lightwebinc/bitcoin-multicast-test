@@ -30,6 +30,18 @@ func AssertNear(t *testing.T, label string, got, expected, tol float64) {
 	}
 }
 
+// AssertEq fails t unless got == want exactly. For accounting identities
+// (sent/delivered/unrecovered closure) where any tolerance would hide the
+// defect the assertion exists to catch.
+func AssertEq(t *testing.T, label string, got, want float64) {
+	t.Helper()
+	if got == want {
+		t.Logf("PASS  %s: got %.0f == %.0f", label, got, want)
+	} else {
+		t.Errorf("FAIL  %s: got %.0f, want exactly %.0f", label, got, want)
+	}
+}
+
 // AssertGTE fails t if got < min.
 func AssertGTE(t *testing.T, label string, got, min float64) {
 	t.Helper()

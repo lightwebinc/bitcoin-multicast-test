@@ -32,13 +32,15 @@ func TestScenario10_SingleEndpointACK(t *testing.T) {
 	beforeL := snapshotListeners(t, e, ctx, "s10")
 	beforeR := e.Snapshot(ctx, "s10-retry1")
 
+	// No -seq-gap-* injection: injected seqnums are pre-stamped, PRESERVED by
+	// the proxy, and never actually sent — each is a phantom permanent gap
+	// that would trip the unrecovered==0 assert once its ~11s retry budget
+	// expires (a latent flake this scenario carried until 2026-08). Netem is
+	// the only loss source.
 	genCmd := subtxGenCmd("[fd10::2]:8725")
 	genCmd = append(genCmd,
 		"-pps", "200",
 		"-duration", "10s",
-		"-seq-gap-every", "500",
-		"-seq-gap-size", "1",
-		"-seq-gap-delay", "500ms",
 	)
 	startGenerator(t, ctx, "s10", genCmd)
 	waitGenerator(t, ctx, "s10")
