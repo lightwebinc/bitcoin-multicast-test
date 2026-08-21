@@ -55,14 +55,15 @@ func TestScenario12_BurstGapRatelimit(t *testing.T) {
 	gapsDetected := sumListenerDelta("s12", "bsl_gaps_detected_total", beforeL, afterL)
 	nacksDispatched := sumListenerDelta("s12", "bsl_nacks_dispatched_total", beforeL, afterL)
 	gapsSuppressed := sumListenerDelta("s12", "bsl_gaps_suppressed_total", beforeL, afterL)
+	gapsUnrecovered := sumListenerDelta("s12", "bsl_gaps_unrecovered_total", beforeL, afterL)
 
 	deltaR := metrics.DeltaMap(beforeR, afterR)
 	nacksReceived := deltaR["bre_nack_requests_total"]
 	rateDrops := deltaR["bre_rate_limit_drops_total"]
 	retransmits := deltaR["bre_retransmits_total"]
 
-	t.Logf("gaps_detected=%.0f nacks=%.0f suppressed=%.0f",
-		gapsDetected, nacksDispatched, gapsSuppressed)
+	t.Logf("gaps_detected=%.0f nacks=%.0f suppressed=%.0f unrecovered=%.0f",
+		gapsDetected, nacksDispatched, gapsSuppressed, gapsUnrecovered)
 	t.Logf("retry: nacks_received=%.0f rate_drops=%.0f retransmits=%.0f",
 		nacksReceived, rateDrops, retransmits)
 
@@ -75,4 +76,8 @@ func TestScenario12_BurstGapRatelimit(t *testing.T) {
 	metrics.AssertGT(t, "retransmits", retransmits)
 	// Some gaps should be recovered despite rate limiting.
 	metrics.AssertGT(t, "gaps suppressed", gapsSuppressed)
+	// Every gap recovered under rate limiting must trace to a SERVED
+	// retransmit (netem gaps are per-listener-disjoint, so suppressed tracks
+	// retransmits ~1:1; a suppressed-without-served run fails the high side).
+	metrics.AssertNear(t, "gaps suppressed ≈ retransmits served", gapsSuppressed, retransmits, 0.30)
 }

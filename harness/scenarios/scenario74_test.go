@@ -179,4 +179,9 @@ func TestScenario74_NACKProxyCrossDomain(t *testing.T) {
 
 	// The consumer's gaps were ultimately recovered.
 	metrics.AssertGT(t, "consumer gaps suppressed (recovered)", gapsSuppressed)
+	// Served↔received correlation: every consumer gap recovery must trace to
+	// a repair actually served into the domain (local cache hits + upstream
+	// proxy recoveries) — a suppressed-without-served run fails here.
+	metrics.AssertNear(t, "consumer suppressed ≈ repairs served into domain",
+		gapsSuppressed, dsRetransmits+proxyRecovered, 0.30)
 }

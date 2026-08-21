@@ -1,4 +1,4 @@
-.PHONY: test test-quick test-retransmit test-frag test-bgp test-ssm test-manifest test-coalesce test-beef test-one clean images help
+.PHONY: test test-quick test-retransmit test-frag test-subtree-announce test-block test-bgp test-ssm test-dedup test-manifest test-coalesce test-beef test-one clean images help
 
 GOTEST := sudo go test ./harness/scenarios/... -v -count=1
 
@@ -9,19 +9,28 @@ test-quick: ## Run only tier-1 filter scenarios (~60s)
 	$(GOTEST) -timeout 5m -run 'Scenario0[1-3]|Scenario0[67]'
 
 test-retransmit: ## Run NACK/retransmit scenarios
-	$(GOTEST) -timeout 15m -run 'Scenario(99|1[0-6])'
+	$(GOTEST) -timeout 15m -run 'Scenario(99|08|1[0-6])'
 
 test-frag: ## Run fragmentation scenarios
 	$(GOTEST) -timeout 10m -run 'Scenario2[2-6]'
 
+test-subtree-announce: ## Run BRC-127 subtree announce scenarios
+	$(GOTEST) -timeout 5m -run 'Scenario2[01]'
+
+test-block: ## Run BRC-131/132/134/135 block / subtree / anchor / header scenarios
+	$(GOTEST) -timeout 15m -run 'Scenario3[0-7]'
+
 test-bgp: ## Run BGP scenarios
 	$(GOTEST) -timeout 10m -run 'Scenario4[02]'
+
+test-dedup: ## Run TxID dedup scenarios
+	$(GOTEST) -timeout 10m -run 'Scenario5[0-3]'
 
 test-ssm: ## Run SSM scenarios (RFC 4607)
 	$(GOTEST) -timeout 5m -run 'Scenario6[01]'
 
 test-manifest: ## Run BRC-139 manifest / auto-shard-config scenarios
-	$(GOTEST) -timeout 5m -run 'Scenario7[0-2]'
+	$(GOTEST) -timeout 10m -run 'Scenario7[0-5]'
 
 test-coalesce: ## Run BRC-142 coalescing / bundle scenarios
 	$(GOTEST) -timeout 12m -run 'Scenario(89|9[01])'

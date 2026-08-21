@@ -65,16 +65,22 @@ func TestScenario34_SubtreeDataRetransmit(t *testing.T) {
 	gapsDetected := sumListenerDelta("s34", "bsl_gaps_detected_total", beforeL, afterL)
 	nacksDispatched := sumListenerDelta("s34", "bsl_nacks_dispatched_total", beforeL, afterL)
 	framesRecv := sumListenerDelta("s34", "bsl_frames_received_total", beforeL, afterL)
+	gapsSuppressed := sumListenerDelta("s34", "bsl_gaps_suppressed_total", beforeL, afterL)
+	gapsUnrecovered := sumListenerDelta("s34", "bsl_gaps_unrecovered_total", beforeL, afterL)
 
 	deltaR := metrics.DeltaMap(beforeR, afterR)
 	retransmits := deltaR["bre_retransmits_total"]
 	reFramesRecv := deltaR["bre_frames_received_total"]
 	reCached := deltaR["bre_frames_cached_total"]
 
-	t.Logf("listeners: frames_recv=%.0f gaps=%.0f nacks=%.0f", framesRecv, gapsDetected, nacksDispatched)
+	t.Logf("listeners: frames_recv=%.0f gaps=%.0f nacks=%.0f suppressed=%.0f unrecovered=%.0f",
+		framesRecv, gapsDetected, nacksDispatched, gapsSuppressed, gapsUnrecovered)
 	t.Logf("retry: frames_recv=%.0f cached=%.0f retransmits=%.0f", reFramesRecv, reCached, retransmits)
 
 	metrics.AssertGT(t, "gaps detected", gapsDetected)
 	metrics.AssertGT(t, "NACKs dispatched", nacksDispatched)
 	metrics.AssertGT(t, "retransmits", retransmits)
+	// Delivery-side evidence: a served retransmit must actually cancel a gap
+	// at a listener, not just leave the retry endpoint.
+	metrics.AssertGT(t, "gaps suppressed (repairs received)", gapsSuppressed)
 }

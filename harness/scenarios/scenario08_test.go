@@ -51,13 +51,14 @@ func TestScenario08_NackRetransmitBRC128(t *testing.T) {
 	gapsDetected := sumListenerDelta("s08", "bsl_gaps_detected_total", beforeL, afterL)
 	nacksDispatched := sumListenerDelta("s08", "bsl_nacks_dispatched_total", beforeL, afterL)
 	gapsSuppressed := sumListenerDelta("s08", "bsl_gaps_suppressed_total", beforeL, afterL)
+	gapsUnrecovered := sumListenerDelta("s08", "bsl_gaps_unrecovered_total", beforeL, afterL)
 
 	deltaR := metrics.DeltaMap(beforeR, afterR)
 	nacksReceived := deltaR["bre_nack_requests_total"]
 	retransmits := deltaR["bre_retransmits_total"]
 
-	t.Logf("gaps_detected=%.0f nacks=%.0f suppressed=%.0f",
-		gapsDetected, nacksDispatched, gapsSuppressed)
+	t.Logf("gaps_detected=%.0f nacks=%.0f suppressed=%.0f unrecovered=%.0f",
+		gapsDetected, nacksDispatched, gapsSuppressed, gapsUnrecovered)
 	t.Logf("retry: nacks_received=%.0f retransmits=%.0f", nacksReceived, retransmits)
 
 	metrics.AssertGT(t, "gaps detected", gapsDetected)
@@ -65,4 +66,8 @@ func TestScenario08_NackRetransmitBRC128(t *testing.T) {
 	metrics.AssertGT(t, "NACKs received", nacksReceived)
 	metrics.AssertGT(t, "retransmits", retransmits)
 	metrics.AssertGT(t, "gaps suppressed", gapsSuppressed)
+	// gaps_suppressed alone is not repair evidence (a late frame or a trusted
+	// bare ACK also suppresses). Tying suppressed to retransmits-served fails
+	// both a suppressed-without-served run and a served-but-never-received run.
+	metrics.AssertNear(t, "gaps suppressed ≈ retransmits served", gapsSuppressed, retransmits, 0.30)
 }

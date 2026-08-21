@@ -62,8 +62,11 @@ sibling `shard-common` checkout.
 make test          # all harness scenarios (~30 min)
 make test-quick    # tier-1 filter scenarios (~60s)
 make test-retransmit  # NACK/retransmit scenarios
+make test-subtree-announce  # BRC-127 subtree announce scenarios
 make test-frag     # fragmentation scenarios
+make test-block    # BRC-131/132/134/135 block / subtree / anchor / header scenarios
 make test-bgp      # BGP ingress / anycast scenarios (currently all skip — deferred)
+make test-dedup    # TxID dedup scenarios
 make test-ssm      # SSM scenarios (RFC 4607)
 make test-manifest # BRC-139 manifest / auto-shard-config scenarios
 make test-coalesce # BRC-142 coalescing / bundle-frame scenarios

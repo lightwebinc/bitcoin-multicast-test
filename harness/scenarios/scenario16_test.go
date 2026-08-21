@@ -43,6 +43,7 @@ func TestScenario16_GroupRatelimit(t *testing.T) {
 		t.Cleanup(func() { env.RemoveNetemLoss(ctx, l) }) //nolint:errcheck
 	}
 
+	beforeL := snapshotListeners(t, e, ctx, "s16")
 	beforeR := e.Snapshot(ctx, "s16-retry1")
 
 	genCmd := subtxGenCmd("[fd10::2]:8725")
@@ -58,19 +59,27 @@ func TestScenario16_GroupRatelimit(t *testing.T) {
 
 	e.Sleep(15*time.Second, "NACK pipeline drain (listeners keep retrying)")
 
+	afterL := scrapeListeners(t, e, ctx, "s16")
 	urlR := e.MetricsURL(ctx, "s16-retry1")
 	afterR := metrics.ScrapeOrFail(t, urlR)
 	e.LogContainerOutput(ctx, "s16-source")
+
+	gapsSuppressed := sumListenerDelta("s16", "bsl_gaps_suppressed_total", beforeL, afterL)
+	gapsUnrecovered := sumListenerDelta("s16", "bsl_gaps_unrecovered_total", beforeL, afterL)
 
 	deltaR := metrics.DeltaMap(beforeR, afterR)
 	groupDrops := deltaR["bre_rate_limit_drops_total"]
 	retransmits := deltaR["bre_retransmits_total"]
 	nacksReceived := deltaR["bre_nack_requests_total"]
 
+	t.Logf("listeners: suppressed=%.0f unrecovered=%.0f", gapsSuppressed, gapsUnrecovered)
 	t.Logf("retry1: nacks=%.0f retransmits=%.0f group_drops=%.0f",
 		nacksReceived, retransmits, groupDrops)
 
 	metrics.AssertGT(t, "NACKs received", nacksReceived)
 	metrics.AssertGT(t, "group rate limit drops", groupDrops)
 	metrics.AssertGT(t, "retransmits (some still succeed)", retransmits)
+	// Delivery-side evidence: the retransmits that got through the group
+	// limiter must actually cancel gaps at the listeners.
+	metrics.AssertGT(t, "gaps suppressed (repairs received)", gapsSuppressed)
 }

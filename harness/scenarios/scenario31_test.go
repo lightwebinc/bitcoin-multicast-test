@@ -51,14 +51,19 @@ func TestScenario31_BlockAnnounceRetransmit(t *testing.T) {
 
 	gapsDetected := sumListenerDelta("s31", "bsl_gaps_detected_total", beforeL, afterL)
 	nacksDispatched := sumListenerDelta("s31", "bsl_nacks_dispatched_total", beforeL, afterL)
+	gapsSuppressed := sumListenerDelta("s31", "bsl_gaps_suppressed_total", beforeL, afterL)
+	gapsUnrecovered := sumListenerDelta("s31", "bsl_gaps_unrecovered_total", beforeL, afterL)
 
 	deltaR := metrics.DeltaMap(beforeR, afterR)
 	retransmits := deltaR["bre_retransmits_total"]
 
-	t.Logf("gaps_detected=%.0f nacks=%.0f retransmits=%.0f",
-		gapsDetected, nacksDispatched, retransmits)
+	t.Logf("gaps_detected=%.0f nacks=%.0f suppressed=%.0f unrecovered=%.0f retransmits=%.0f",
+		gapsDetected, nacksDispatched, gapsSuppressed, gapsUnrecovered, retransmits)
 
 	metrics.AssertGT(t, "gaps detected", gapsDetected)
 	metrics.AssertGT(t, "NACKs dispatched", nacksDispatched)
 	metrics.AssertGT(t, "retransmits", retransmits)
+	// Delivery-side evidence: a served retransmit must actually cancel a gap
+	// at a listener, not just leave the retry endpoint.
+	metrics.AssertGT(t, "gaps suppressed (repairs received)", gapsSuppressed)
 }

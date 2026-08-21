@@ -222,11 +222,14 @@ per-domain quorum/hysteresis/divergence with BRC-139-only back-compat.
 | ---------------------------- | ------------------------------- | ------------------------------ |
 | `make test`                  | all                             | ~30 min, all harness scenarios |
 | `make test-quick`            | `Scenario0[1-3]\|Scenario0[67]` | tier-1 filter scenarios (~60s) |
-| `make test-retransmit`       | `Scenario(99\|1[0-6])`          | NACK / retransmit              |
+| `make test-retransmit`       | `Scenario(99\|08\|1[0-6])`      | NACK / retransmit              |
+| `make test-subtree-announce` | `Scenario2[01]`                 | BRC-127 subtree announce       |
 | `make test-frag`             | `Scenario2[2-6]`                | fragmentation                  |
+| `make test-block`            | `Scenario3[0-7]`                | BRC-131/132/134/135 lanes      |
 | `make test-bgp`              | `Scenario4[02]`                 | BGP (all currently skip)       |
+| `make test-dedup`            | `Scenario5[0-3]`                | TxID dedup                     |
 | `make test-ssm`              | `Scenario6[01]`                 | SSM (RFC 4607)                 |
-| `make test-manifest`         | `Scenario7[0-2]`                | BRC-139 / auto-shard-config    |
+| `make test-manifest`         | `Scenario7[0-5]`                | BRC-139 / auto-shard-config    |
 | `make test-coalesce`         | `Scenario(89\|9[01])`           | BRC-142 coalescing / bundle    |
 | `make test-beef`             | `Scenario9[2-8]`                | BRC-148 BEEF object plane      |
 | `make test-one T=ScenarioNN` | single                          | run one scenario               |
