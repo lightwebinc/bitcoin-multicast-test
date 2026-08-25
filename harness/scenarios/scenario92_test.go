@@ -43,7 +43,7 @@ func TestScenario92_BeefSubmitDeliver(t *testing.T) {
 	dp := metrics.DeltaMap(beforeP, afterP)
 	t.Logf("proxy: beef_submissions=%.0f class_pkts=%.0f fwd=%.0f dropped=%.0f tcp_bytes=%.0f",
 		dp["bsp_beef_submissions_total"], dp["bsp_ingress_class_packets_total"],
-		dp["bsp_frames_forwarded_total"], dp["bsp_packets_dropped_total"], dp["bsp_tcp_bytes_received_total"])
+		dp["bsp_packets_forwarded_total"], dp["bsp_packets_dropped_total"], dp["bsp_tcp_bytes_received_total"])
 	afterL := scrapeListeners(t, e, ctx, "s92")
 
 	for i, label := range []string{"listener1", "listener2", "listener3"} {

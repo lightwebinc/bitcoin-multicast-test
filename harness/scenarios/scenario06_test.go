@@ -44,9 +44,9 @@ func TestScenario06_FunctionalBRC128(t *testing.T) {
 	metrics.AssertNear(t, "listener3 passed filter (subtree-include)", passL3, recvL3*1/8, 0.15)
 
 	// EF payloads must NOT trip bad_frame counter.
-	metrics.AssertZero(t, "listener1 bad_frame=0", deltaL1["bsl_bad_frame_drops_total"])
-	metrics.AssertZero(t, "listener2 bad_frame=0", deltaL2["bsl_bad_frame_drops_total"])
-	metrics.AssertZero(t, "listener3 bad_frame=0", deltaL3["bsl_bad_frame_drops_total"])
+	metrics.AssertZero(t, "listener1 bad_frame=0", deltaL1["bsl_frames_invalid_payload_total"])
+	metrics.AssertZero(t, "listener2 bad_frame=0", deltaL2["bsl_frames_invalid_payload_total"])
+	metrics.AssertZero(t, "listener3 bad_frame=0", deltaL3["bsl_frames_invalid_payload_total"])
 
 	metrics.AssertGTE(t, "listener1 received > 4000", recvL1, 4000)
 }
