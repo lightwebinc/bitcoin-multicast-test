@@ -25,10 +25,15 @@ func (d *Driver) Start(ctx context.Context, cfg driver.NodeConfig) error {
 	args := []string{
 		"run", "-d",
 		"--name", cfg.Name,
-		"--network", NetworkName,
-		"--ip6", cfg.IPv6,
-		"--cap-add", "NET_ADMIN",
 	}
+	if cfg.ShareNetNS != "" {
+		// Co-resident process model: share the peer's network namespace
+		// (loopback included) instead of owning a fabric address.
+		args = append(args, "--network", "container:"+cfg.ShareNetNS)
+	} else {
+		args = append(args, "--network", NetworkName, "--ip6", cfg.IPv6)
+	}
+	args = append(args, "--cap-add", "NET_ADMIN")
 	for k, v := range cfg.Env {
 		args = append(args, "-e", k+"="+v)
 	}
@@ -88,7 +93,19 @@ func (d *Driver) Addr(ctx context.Context, name string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("docker inspect %s: %w\n%s", name, err, out)
 	}
-	return strings.TrimSpace(out), nil
+	if addr := strings.TrimSpace(out); addr != "" {
+		return addr, nil
+	}
+	// A ShareNetNS node has no address of its own: resolve the peer whose
+	// network namespace it joined (NetworkMode "container:<id-or-name>").
+	nm, err := run(ctx, "docker", "inspect", "--format", "{{.HostConfig.NetworkMode}}", name)
+	if err != nil {
+		return "", fmt.Errorf("docker inspect %s: %w\n%s", name, err, nm)
+	}
+	if ref, ok := strings.CutPrefix(strings.TrimSpace(nm), "container:"); ok && ref != "" {
+		return d.Addr(ctx, ref)
+	}
+	return "", fmt.Errorf("no IPv6 address for %s (network mode %q)", name, strings.TrimSpace(nm))
 }
 
 // MetricsURL returns the HTTP URL for the /metrics endpoint.

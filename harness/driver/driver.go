@@ -32,6 +32,13 @@ type NodeConfig struct {
 	MetricsPort int
 	// Role is informational; used for topology queries.
 	Role Role
+	// ShareNetNS, when non-empty, joins this node to the named node's network
+	// namespace instead of attaching it to the fabric network with its own
+	// IPv6 (Docker driver only). This models co-resident processes on ONE
+	// node — e.g. a collapsed edge's listener + retry-endpoint sharing
+	// loopback. The named node must be started first, IPv6 is ignored, and
+	// the two nodes' listen/metrics ports must not collide.
+	ShareNetNS string
 }
 
 // Driver is the interface that wraps the lifecycle of test nodes.

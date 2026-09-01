@@ -31,7 +31,7 @@ make test-one T=ScenarioNN
 | 08  | NACK retransmit with BRC-128 payloads        | `TestScenario08_NackRetransmitBRC128`        | [harness](harness/scenarios/scenario08_test.go)        |
 | 09  | Listener payload hash verification           | `TestScenario09_ListenerPayloadVerification` | [harness](harness/scenarios/scenario09_test.go) |
 
-## 10–18 — NACK / retransmit / rate limiting
+## 10–19 — NACK / retransmit / rate limiting
 
 `make test-retransmit`
 
@@ -46,6 +46,7 @@ make test-one T=ScenarioNN
 | 16  | Per-group retransmit rate limit (ACK preserved) | `TestScenario16_GroupRatelimit`         | [harness](harness/scenarios/scenario16_test.go)          |
 | 17  | Recovery shortfall identity (clean regime)      | `TestScenario17_RecoveryShortfallIdentity` | [harness](harness/scenarios/scenario17_test.go) · full exact identity: `unrecovered == sent − delivered == 0` + gap closure per unfiltered listener (unicast-only repair, warmup/trailer). Found+fixed a real tracker defect: a low-seq repair falsely tripped the proxy-restart flow reset (phantom unrecovered cascade) |
 | 18  | Unrecoverable-loss (cache MISS) shortfall identity | `TestScenario18_UnrecoverableLossShortfallIdentity` | [harness](harness/scenarios/scenario18_test.go) · same identity with `unrecovered > 0` forced by an empty retry cache (rate-limit starvation only DELAYS repair — a late range-fill still delivers, breaking exactness) |
+| 19  | Listener retry-tee feeds a join-less cache      | `TestScenario19_ListenerTeeFedJoinlessRepair` | [harness](harness/scenarios/scenario19_test.go) · retry runs `MC_JOIN_ENABLED=false` + `TEE_LISTEN`, fed ONLY by a co-resident listener's `-retry-tee` (real shared netns via `ShareNetNS`); remote listeners' netem loss fully repaired from that cache, with per-source attribution preserved through the teewire envelope (`bre_cache_stored_total{source=<proxy>}` moves, `{source="::1"}` stays 0) |
 
 ## 20–21 — Subtree group announce (BRC-127)
 
